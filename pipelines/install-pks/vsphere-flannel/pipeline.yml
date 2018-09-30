@@ -1,6 +1,6 @@
 groups:
 
-- name: all
+- name: pks-deploy
   jobs:
   - deploy-opsman
   - wipe-env
@@ -13,6 +13,7 @@ groups:
 - name: pks-ops
   jobs:
   - create-pks-cli-user
+  - create-pks-cluster
 resource_types:
 - name: pivnet
   type: docker-image
@@ -306,9 +307,9 @@ jobs:
   plan:
   - aggregate:
     - get: pcf-lab-pipelines
-      passed:
-      - create-pks-cli-user
-      trigger: true      
+      #passed:
+      #- create-pks-cli-user
+      #trigger: true      
   - task: create-cluster
     file: pcf-lab-pipelines/tasks/all/pks-create-cluster/task.yml
     params:
