@@ -1,0 +1,57 @@
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+resources:
+- name: pcf-lab-pipelines
+  type: git
+  source:
+    uri: git@github.com:alekssaul/pcf-lab-pipelines.git
+    #private_key: {{git_private_key}}
+    tag_filter: "dev"
+
+- name: pcf-ops-manager
+  type: pivnet
+  source:
+    api_token: {{pivnet_token}}
+    product_slug: ops-manager
+    product_version: {{opsman_major_minor_version}}
+    sort_by: semver
+
+jobs:
+- name: deploy-opsman
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+    - get: pivnet-opsman-product
+      resource: pcf-ops-manager
+      params: {globs: ["*.ova"]}
+
+  - task: deploy
+    file: pcf-lab-pipelines/install-pas/tasks/vsphere/import-opsman/task.yml
+    params:
+      GOVC_INSECURE: {{vcenter_insecure}}
+      GOVC_CA_CERT: {{vcenter_ca_cert}}
+      GOVC_URL: {{vcenter_host}}
+      GOVC_USERNAME: {{vcenter_usr}}
+      GOVC_PASSWORD: {{vcenter_pwd}}
+      GOVC_DATACENTER: {{vcenter_datacenter}}
+      GOVC_DATASTORE: {{vcenter_datastore}}
+      GOVC_NETWORK: {{om_vm_network}}
+      GOVC_RESOURCE_POOL: {{om_resource_pool}}
+      GOVC_HOST: {{om_vm_host}}
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OM_VM_FOLDER: {{om_vm_folder}}
+      OPS_MGR_SSH_PWD: {{opsman_ssh_password}}
+      OM_NTP_SERVERS: {{om_ntp_servers}}
+      OM_DNS_SERVERS: {{om_dns_servers}}
+      OM_GATEWAY: {{om_gateway}}
+      OM_NETMASK: {{om_netmask}}
+      OM_IP: {{om_ip}}
+      OM_VM_NETWORK: {{om_vm_network}}
+      OM_VM_NAME: {{om_vm_name}}
+      OPSMAN_DISK_TYPE: {{opsman_disk_type}}
+      OM_VM_POWER_STATE: {{om_vm_power_state}}
