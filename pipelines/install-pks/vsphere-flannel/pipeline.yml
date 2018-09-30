@@ -280,9 +280,9 @@ jobs:
       GOVC_RESOURCE_POOL: {{om_resource_pool}}
       GOVC_HOST: {{om_vm_host}}
 
-###########################
+###############################
 ## Job - Create PKS CLI User ##
-###########################
+###############################
 - name: create-pks-cli-user
   plan:
   - aggregate:
