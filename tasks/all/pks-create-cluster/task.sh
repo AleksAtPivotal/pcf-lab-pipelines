@@ -1,7 +1,7 @@
 #!/bin/bash -eu
 
-echo "Login to PKS API [$PCF_PKS_API]"
-pks login -a "$PCF_PKS_API" -u "$PKS_CLI_USERNAME" -p "$PKS_CLI_PASSWORD" --skip-ssl-validation # TBD --ca-cert CERT-PATH
+echo "Login to PKS API [$PKS_API]"
+pks login -a "$PKS_API" -u "$PKS_CLI_USERNAME" -p "$PKS_CLI_PASSWORD" --skip-ssl-validation # TBD --ca-cert CERT-PATH
 
 echo "Creating PKS cluster [$PKS_CLUSTER_NAME], master node hostname [$PKS_CLUSTER_MASTER_HOSTNAME], plan [$PKS_SERVICE_PLAN_NAME], number of workers [$PKS_CLUSTER_NUMBER_OF_WORKERS]"
 pks create-cluster "$PKS_CLUSTER_NAME" --external-hostname "$PKS_CLUSTER_MASTER_HOSTNAME" --plan "$PKS_SERVICE_PLAN_NAME" --num-nodes "$PKS_CLUSTER_NUMBER_OF_WORKERS"
