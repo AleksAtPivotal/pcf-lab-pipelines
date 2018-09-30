@@ -299,3 +299,23 @@ jobs:
       PKS_CLI_USERNAME: {{pks_cli_username}}
       PKS_CLI_USEREMAIL: {{pks_cli_useremail}}
       PKS_CLI_PASSWORD: {{pks_cli_password}}
+###########################
+## Job - Create PKS Cluster##
+###########################
+- name: create-pks-cluster
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed:
+      - create-pks-cli-user
+      trigger: true      
+  - task: create-cluster
+    file: pcf-lab-pipelines/tasks/all/pks-create-cluster/task.yml
+    params:
+        PKS_API: {{pks_api_domain}}
+        PKS_CLI_USERNAME: {{pks_cli_username}}
+        PKS_CLI_PASSWORD: {{pks_cli_password}}
+        PKS_SERVICE_PLAN_NAME: "small"
+        PKS_CLUSTER_NAME: {{pks_cluster_name}}
+        PKS_CLUSTER_MASTER_HOSTNAME: {{pks_cluster_externalhostname}}
+        PKS_CLUSTER_NUMBER_OF_WORKERS: 2
