@@ -9,7 +9,7 @@ groups:
   - config-director
   - deploy-director
   - upload-ert
-  - configure-ert
+  - configure-srt
   - deploy-ert
 
 - name: iaas
@@ -19,10 +19,10 @@ groups:
   - config-director
   - deploy-director
 
-- name: ert
+- name: srt
   jobs:
   - upload-ert
-  - configure-ert
+  - configure-srt
   - deploy-ert
 
 resource_types:
@@ -55,9 +55,14 @@ resources:
 - name: pcf-pipelines
   type: git
   source:
-    uri: git@github.com:pivotal-cf/pcf-pipelines.git
-    branch: master
-    private_key: {{git_private_key}}
+    uri: https://github.com/pivotal-cf/pcf-pipelines.git
+    tag_filter: "*0.23.8"
+
+- name: pcf-lab-pipelines
+  type: git
+  source:
+    uri: https://github.com/alekssaul/pcf-lab-pipelines.git
+    branch: "dev"
 
 - name: pivnet-opsmgr
   type: pivnet
@@ -200,6 +205,7 @@ jobs:
     - get: pcf-pipelines
     - get: pivnet-opsmgr
       passed: [create-infrastructure]
+      trigger: true
       params:
         globs: []
 
@@ -347,23 +353,25 @@ jobs:
       OPSMAN_PASSWORD: {{opsman_admin_password}}
 
 ###########################
-## Job - Configure ERT   ##
+## Job - Configure SRT   ##
 ###########################
-- name: configure-ert
+- name: configure-srt
   serial: true
   max_in_flight: 1
   serial_groups: [full]
   plan:
   - aggregate:
     - get: pcf-pipelines
+    - get: pcf-lab-pipelines
     - get: terraform-state
     - get: pivnet-opsmgr
       passed: [upload-ert]
       trigger: true
       params: {globs: []}
 
-  - task: configure-ert
-    file: pcf-pipelines/tasks/config-ert/task.yml
+  - task: configure-srt
+    file: pcf-lab-pipelines/tasks/all/configure-srt/task.yml
+    #file: pcf-pipelines/tasks/config-ert/task.yml
     params:
       IAAS: azure
       OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
@@ -424,15 +432,12 @@ jobs:
       TCP_ROUTER_STATIC_IPS: {{tcp_router_static_ips}}
       SSH_STATIC_IPS: {{ssh_static_ips}}
       MYSQL_STATIC_IPS: {{mysql_static_ips}}
-      CONSUL_SERVER_INSTANCES: {{consul_server_instances}}
-      NATS_INSTANCES: {{nats_instances}}
-      NFS_SERVER_INSTANCES: {{nfs_server_instances}}
       MYSQL_PROXY_INSTANCES: {{mysql_proxy_instances}}
       MYSQL_INSTANCES: {{mysql_instances}}
       BACKUP_PREPARE_INSTANCES: {{backup_prepare_instances}}
+      BLOBSTORE_INSTANCES: {{bloblstore_instances}}
       UAA_INSTANCES: {{uaa_instances}}
       CLOUD_CONTROLLER_INSTANCES: {{cloud_controller_instances}}
-      CREDHUB_INSTANCES: {{credhub_instances}}
       HA_PROXY_INSTANCES: {{ha_proxy_instances}}
       HA_PROXY_LB_NAME: {{ha_proxy_lb_name}}
       ROUTER_INSTANCES: {{router_instances}}
@@ -442,7 +447,6 @@ jobs:
       DIEGO_DATABASE_INSTANCES: {{diego_database_instances}}
       DIEGO_BRAIN_INSTANCES: {{diego_brain_instances}}
       DIEGO_CELL_INSTANCES: {{diego_cell_instances}}
-      DOPPLER_INSTANCES: {{doppler_instances}}
       LOGGREGATOR_TRAFFICCONTROLLER_INSTANCES: {{loggregator_trafficcontroller_instances}}
       TCP_ROUTER_INSTANCES: {{tcp_router_instances}}
       SYSLOG_ADAPTER_INSTANCES: {{syslog_adapter_instances}}
@@ -502,7 +506,7 @@ jobs:
   - aggregate:
     - get: pcf-pipelines
     - get: pivnet-opsmgr
-      passed: [configure-ert]
+      passed: [configure-srt]
       trigger: true
       params: {globs: []}
 

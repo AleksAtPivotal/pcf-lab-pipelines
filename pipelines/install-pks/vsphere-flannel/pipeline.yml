@@ -287,7 +287,10 @@ jobs:
 - name: create-pks-cli-user
   plan:
   - aggregate:
-    - get: pcf-lab-pipelines   
+    - get: pcf-lab-pipelines
+      passed:
+      - deploy-pks
+      trigger: true    
   - task: configure-pks-cli-user
     file: pcf-lab-pipelines/tasks/all/configure-pks-cli-user/task.yml
     params:
@@ -307,9 +310,9 @@ jobs:
   plan:
   - aggregate:
     - get: pcf-lab-pipelines
-      #passed:
-      #- create-pks-cli-user
-      #trigger: true      
+      passed:
+      - create-pks-cli-user
+      trigger: true      
   - task: create-cluster
     file: pcf-lab-pipelines/tasks/all/pks-create-cluster/task.yml
     params:
