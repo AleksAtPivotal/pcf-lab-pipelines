@@ -8,9 +8,9 @@ groups:
   - config-opsman-auth
   - config-director
   - deploy-director
-  - upload-ert
+  - upload-srt
   - configure-srt
-  - deploy-ert
+  - deploy-srt
 
 - name: iaas
   jobs:
@@ -21,9 +21,9 @@ groups:
 
 - name: srt
   jobs:
-  - upload-ert
+  - upload-srt
   - configure-srt
-  - deploy-ert
+  - deploy-srt
 
 resource_types:
 - name: azure-blobstore
@@ -315,7 +315,7 @@ jobs:
 ###########################
 ## Job - Upload ERT      ##
 ###########################
-- name: upload-ert
+- name: upload-srt
   serial_groups: [opsman]
   plan:
   - aggregate:
@@ -365,13 +365,12 @@ jobs:
     - get: pcf-lab-pipelines
     - get: terraform-state
     - get: pivnet-opsmgr
-      passed: [upload-ert]
+      passed: [upload-srt]
       trigger: true
       params: {globs: []}
 
   - task: configure-srt
     file: pcf-lab-pipelines/tasks/all/configure-srt/task.yml
-    #file: pcf-pipelines/tasks/config-ert/task.yml
     params:
       IAAS: azure
       OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
@@ -497,7 +496,7 @@ jobs:
 ###########################
 ## Job - Deploy    ERT   ##
 ###########################
-- name: deploy-ert
+- name: deploy-srt
   serial: true
   max_in_flight: 1
   serial_groups: [full]
@@ -510,7 +509,7 @@ jobs:
       trigger: true
       params: {globs: []}
 
-  - task: deploy-ert
+  - task: deploy-srt
     file: pcf-pipelines/tasks/apply-changes/task.yml
     params:
       OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
