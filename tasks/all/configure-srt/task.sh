@@ -350,6 +350,15 @@ cf_properties=$(
 
     +
 
+    # Credhub Secure Services Instances
+    {
+      ".properties.secure_service_instance_credentials": {
+        "value": "true"
+      }
+    }
+
+    +
+
     # SMTP Configuration
     if $smtp_address != "" then
       {
