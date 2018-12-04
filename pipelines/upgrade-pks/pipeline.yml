@@ -1,0 +1,128 @@
+# Copyright 2017-Present Pivotal Software, Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+groups: []
+
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+resources:
+- name: pcf-pipelines
+  type: git
+  source:
+    uri: git@github.com:pivotal-cf/pcf-pipelines.git
+    branch: master
+    private_key: {{git_private_key}}
+
+- name: pks-tile
+  type: pivnet
+  source:
+    api_token: {{pivnet_token}}
+    product_slug: {{product_slug}}
+    product_version: {{product_version_regex}}
+    sort_by: semver
+
+- name: schedule
+  type: time
+  source:
+    interval: 30m
+    start: "12:00 AM"
+    stop: "11:59 PM"
+    location: America/Los_Angeles
+    days: [Sunday, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday]
+
+jobs:
+- name: regulator
+  plan:
+  - get: schedule
+    trigger: true
+  - get: pks-tile
+    params: { globs: [] }
+
+- name: upload-and-stage-pks-tile
+  plan:
+  - aggregate:
+    - get: pcf-pipelines
+    - get: pivnet-product
+      resource: pks-tile
+      passed: [regulator]
+      trigger: true
+      params:
+        globs:
+        - {{product_globs}}
+
+  - task: wait-opsman-clear
+    file: pcf-pipelines/tasks/wait-opsman-clear/task.yml
+    params:
+      OPSMAN_CLIENT_ID: {{opsman_client_id}}
+      OPSMAN_CLIENT_SECRET: {{opsman_client_secret}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+
+  - task: upload-pks-tile-and-stemcell
+    file: pcf-pipelines/tasks/upload-product-and-stemcell/task.yml
+    params:
+      IAAS: {{iaas_type}}
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_CLIENT_ID: {{opsman_client_id}}
+      OPSMAN_CLIENT_SECRET: {{opsman_client_secret}}
+      OPS_MGR_USR: {{opsman_admin_username}}
+      OPS_MGR_PWD: {{opsman_admin_password}}
+      PIVNET_API_TOKEN: {{pivnet_token}}
+      NO_PROXY: ""
+      OM_IP: ""
+
+  - task: stage-pks-tile
+    file: pcf-pipelines/tasks/stage-product/task.yml
+    params:
+      OPSMAN_CLIENT_ID: {{opsman_client_id}}
+      OPSMAN_CLIENT_SECRET: {{opsman_client_secret}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+
+  - task: toggle-errands
+    file: pcf-pipelines/tasks/toggle-errands/task.yml
+    params:
+      ENABLE_ERRANDS: {{enable_errands}}
+      OPSMAN_CLIENT_ID: {{opsman_client_id}}
+      OPSMAN_CLIENT_SECRET: {{opsman_client_secret}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+
+- name: upgrade-pks
+  plan:
+  - aggregate:
+    - get: pcf-pipelines
+    - get: pivnet-product
+      resource: pks-tile
+      passed: [ upload-and-stage-pks-tile ]
+      trigger: true
+      params:
+        globs: [ ]
+  - task: upgrade-pks
+    file: pcf-pipelines/tasks/apply-changes/task.yml
+    params:
+      OPSMAN_CLIENT_ID: {{opsman_client_id}}
+      OPSMAN_CLIENT_SECRET: {{opsman_client_secret}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+
