@@ -1,0 +1,62 @@
+# Copyright 2017-Present Pivotal Software, Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#  http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Set to true to enable all errands, false to disable all or leave blank to keep states the same.
+enable_errands: 
+
+# The IaaS name for which stemcell to download. This must match the IaaS name
+# within the stemcell to download, e.g. "vsphere", "aws", "azure", "google" must be lowercase.
+iaas_type: vsphere
+
+git_private_key: 
+
+
+# Operations Manager
+# ------------------------------
+# Credentials for Operations Manager. These are used for uploading, staging,
+# and deploying the product file on Operations Manager.
+# Either opsman_client_id/opsman_client_secret or opsman_admin_username/opsman_admin_password needs to be specified.
+# If you are using opsman_admin_username/opsman_admin_password, edit opsman_client_id/opsman_client_secret to be an empty value.
+# If you are using opsman_client_id/opsman_client_secret, edit opsman_admin_username/opsman_admin_password to be an empty value.
+opsman_admin_username: admin 
+opsman_admin_password: Password123!
+opsman_client_id: 
+opsman_client_secret: 
+opsman_domain_or_ip_address: opsman.company.cok
+
+# Resource
+# ------------------------------
+# The token used to download the product file from Pivotal Network. Find this
+# on your Pivotal Network profile page:
+# https://network.pivotal.io/users/dashboard/edit-profile
+pivnet_token: "tokennum"
+
+# The globs regular expression for the PivNet resource to download the product
+# release files. "*pivotal" is the default.
+# For products such as ERT, it is recommended to use "cf*pivotal" to avoid the
+# extra download of the PKS file in PCF 1.12.*
+product_globs: "pivotal-container-service*pivotal"
+
+# om-linux
+# ------------------------------
+# The name of the product on Pivotal Network. This is used to configure the
+# resource that will fetch the product file.
+#
+# This can be found in the URL of the product page, e.g. for rabbitmq the URL
+# is https://network.pivotal.io/products/pivotal-rabbitmq-service, and the
+# product slug is 'pivotal-rabbitmq-service'.
+product_slug: pivotal-container-service
+
+# The minor product version to track, as a regexp. To track 1.11.x of a product, this would be "^2\.0\.[0-9]+$", as shown below.
+product_version_regex: ^1\.2\.[0-9]+$
