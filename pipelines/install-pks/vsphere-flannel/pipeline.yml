@@ -1,0 +1,325 @@
+groups:
+
+- name: pks-deploy
+  jobs:
+  - deploy-opsman
+  - wipe-env
+  - configure-director
+  - deploy-director
+  - upload-pks
+  - configure-pks
+  - deploy-pks
+
+- name: pks-ops
+  jobs:
+  - create-pks-cli-user
+  - create-pks-cluster
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+resources:
+- name: pcf-lab-pipelines
+  type: git
+  source:
+    uri: https://github.com/alekssaul/pcf-lab-pipelines.git
+    branch: "dev"
+    #tag_filter: "dev"
+
+- name: ops-manager
+  type: pivnet
+  check_every: 24h
+  source:
+    api_token: {{pivnet_token}}
+    product_slug: ops-manager
+    product_version: {{opsman_major_minor_version}}
+    sort_by: semver
+
+- name: pivnet-pks
+  type: pivnet
+  check_every: 24h
+  source:
+    api_token: {{pivnet_token}}
+    product_slug: pivotal-container-service
+    product_version: {{pks_major_minor_version}}
+    sort_by: semver
+
+
+jobs:
+###########################
+## Job - Deploy-Opsman ##
+###########################
+- name: deploy-opsman
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+    - get: pivnet-opsman-product
+      resource:   ops-manager
+      params: {globs: ["*.ova"]}
+
+  - task: deploy
+    file: pcf-lab-pipelines/tasks/vsphere/import-opsman/task.yml
+    params: 
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OM_VM_FOLDER: {{om_vm_folder}}
+      OPS_MGR_SSH_PWD: {{opsman_ssh_password}}
+      OM_NTP_SERVERS: {{om_ntp_servers}}
+      OM_DNS_SERVERS: {{om_dns_servers}}
+      OM_GATEWAY: {{om_gateway}}
+      OM_NETMASK: {{om_netmask}}
+      OM_IP: {{om_ip}}
+      OM_VM_NETWORK: {{om_vm_network}}
+      OM_VM_NAME: {{om_vm_name}}
+      OPSMAN_DISK_TYPE: {{opsman_disk_type}}
+      OM_VM_POWER_STATE: {{om_vm_power_state}}
+      GOVC_INSECURE: {{vcenter_insecure}}
+      GOVC_CA_CERT: {{vcenter_ca_cert}}
+      GOVC_URL: {{vcenter_host}}
+      GOVC_USERNAME: {{vcenter_usr}}
+      GOVC_PASSWORD: {{vcenter_pwd}}
+      GOVC_DATACENTER: {{vcenter_datacenter}}
+      GOVC_DATASTORE: {{vcenter_datastore}}
+      GOVC_NETWORK: {{om_vm_network}}
+      GOVC_RESOURCE_POOL: {{om_resource_pool}}
+      GOVC_HOST: {{om_vm_host}}
+
+###########################
+## Job - Config-Director ##
+###########################
+- name: configure-director
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed: [deploy-opsman]
+      trigger: true
+    - get: ops-manager
+      params: {globs: []}
+  - task: config-opsman-auth
+    file: pcf-lab-pipelines/tasks/all/config-opsman/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPS_MGR_USR: {{opsman_admin_username}}
+      OPS_MGR_PWD: {{opsman_admin_password}}
+      OM_DECRYPTION_PWD: {{opsman_admin_password}}
+  
+  - task: configure-director
+    file: pcf-lab-pipelines/tasks/vsphere/config-opsdir/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPS_MGR_USR: {{opsman_admin_username}}
+      OPS_MGR_PWD: {{opsman_admin_password}}
+      VCENTER_HOST: {{vcenter_host}}
+      VCENTER_USR: {{vcenter_usr}}
+      VCENTER_PWD: {{vcenter_pwd}}
+      VCENTER_DATA_CENTER: {{vcenter_datacenter}}
+      VCENTER_DISK_TYPE: {{vm_disk_type}}
+      EPHEMERAL_STORAGE_NAMES: {{ephemeral_storage_names}}
+      PERSISTENT_STORAGE_NAMES: {{persistent_storage_names}}
+      BOSH_VM_FOLDER:  {{bosh_vm_folder}}
+      BOSH_TEMPLATE_FOLDER: {{bosh_template_folder}}
+      BOSH_DISK_PATH: {{bosh_disk_path}}
+      ICMP_CHECKS_ENABLED: {{icmp_checks_enabled}}
+      INFRA_NETWORK_NAME: {{infra_network_name}}
+      INFRA_VCENTER_NETWORK: {{infra_vsphere_network}}
+      INFRA_NW_CIDR: {{infra_nw_cidr}}
+      INFRA_EXCLUDED_RANGE: {{infra_excluded_range}}
+      INFRA_NW_DNS: {{infra_nw_dns}}
+      INFRA_NW_GATEWAY: {{infra_nw_gateway}}
+      INFRA_NW_AZS: {{infra_nw_azs}}
+      SERVICES_NETWORK_NAME: {{services_network_name}}
+      SERVICES_VCENTER_NETWORK: {{services_vsphere_network}}
+      SERVICES_NW_CIDR: {{services_nw_cidr}}
+      SERVICES_EXCLUDED_RANGE: {{services_excluded_range}}
+      SERVICES_NW_DNS: {{services_nw_dns}}
+      SERVICES_NW_GATEWAY: {{services_nw_gateway}}
+      SERVICES_NW_AZS: {{services_nw_azs}}
+      AZ_1: {{az_1_name}}
+      AZ_1_CLUSTER_NAME: {{az_1_cluster_name}}
+      AZ_1_RP_NAME: {{az_1_rp_name}}
+      AZ_2: {{az_2_name}}
+      AZ_2_CLUSTER_NAME: {{az_2_cluster_name}}
+      AZ_2_RP_NAME: {{az_2_rp_name}}
+      AZ_3: {{az_3_name}}
+      AZ_3_CLUSTER_NAME: {{az_3_cluster_name}}
+      AZ_3_RP_NAME: {{az_3_rp_name}}
+      NTP_SERVERS: {{om_ntp_servers}}
+      OPS_DIR_HOSTNAME: {{opsman_domain_or_ip_address}}
+      ENABLE_VM_RESURRECTOR: {{enable_vm_resurrector}}
+      MAX_THREADS: {{max_threads}}
+      TRUSTED_CERTIFICATES: {{trusted_certificates}}
+      NSX_NETWORKING_ENABLED: {{nsx_networking_enabled}}
+
+###########################
+## Job - Deploy-Director ##
+###########################
+- name: deploy-director
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed: [configure-director]
+      trigger: true
+    - get: ops-manager
+      params: {globs: []}
+  - task: apply-changes
+    file: pcf-lab-pipelines/tasks/all/apply-changes/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_CLIENT_ID: ""
+      OPSMAN_CLIENT_SECRET: ""
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+
+###########################
+## Job - Upload PKS ##
+###########################
+- name: upload-pks
+  serial_groups: [opsman]
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed: [deploy-director]
+      trigger: true
+    - get: pivnet-product
+      resource: pivnet-pks
+      params:
+        globs:
+        - "pivotal-container-service*.pivotal"
+
+  - task: upload-tile
+    file: pcf-lab-pipelines/tasks/all/upload-product-and-stemcell/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_CLIENT_ID: ""
+      OPSMAN_CLIENT_SECRET: ""
+      OPS_MGR_USR: {{opsman_admin_username}}
+      OPS_MGR_PWD: {{opsman_admin_password}}
+      PIVNET_API_TOKEN: {{pivnet_token}}
+      IAAS: "vsphere"
+      NO_PROXY: ""
+      OM_IP: ""
+
+  - task: stage-tile
+    file: pcf-lab-pipelines/tasks/all/stage-product/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_CLIENT_ID: ""
+      OPSMAN_CLIENT_SECRET: ""
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+
+###########################
+## Job - Configure PKS ##
+###########################
+- name: configure-pks
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed: [upload-pks]
+      trigger: true      
+    - get: pivnet-product
+      resource: pivnet-pks
+      params:
+        globs:
+        - "pivotal-container-service*.pivotal"
+  - task: configure
+    file: pcf-lab-pipelines/tasks/all/configure-product/task.yml
+    params: 
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_CLIENT_ID: ""
+      OPSMAN_CLIENT_SECRET: ""
+      TILE_PROPERTIES: {{pks-properties}}
+      TILE_NETWORK: {{pks-networks}}
+      TILE_RESOURCES: {{pks-resources}}
+      TILE_PRODUCT_NAME: "pivotal-container-service"
+
+###########################
+## Job - Deploy PKS ##
+###########################
+- name: deploy-pks
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed:
+      - configure-pks
+      trigger: true      
+  - task: apply-changes
+    file: pcf-lab-pipelines/tasks/all/apply-changes/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_CLIENT_ID: ""
+      OPSMAN_CLIENT_SECRET: ""
+
+###########################
+## Job - Wipe-env ##
+###########################
+- name: wipe-env
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+  - task: wipe
+    file: pcf-lab-pipelines/tasks/vsphere/wipe-env/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_IP: {{om_ip}}
+      GOVC_INSECURE: {{vcenter_insecure}}
+      GOVC_CA_CERT: {{vcenter_ca_cert}}
+      GOVC_URL: {{vcenter_host}}
+      GOVC_USERNAME: {{vcenter_usr}}
+      GOVC_PASSWORD: {{vcenter_pwd}}
+      GOVC_DATACENTER: {{vcenter_datacenter}}
+      GOVC_DATASTORE: {{vcenter_datastore}}
+      GOVC_NETWORK: {{om_vm_network}}
+      GOVC_RESOURCE_POOL: {{om_resource_pool}}
+      GOVC_HOST: {{om_vm_host}}
+
+###############################
+## Job - Create PKS CLI User ##
+###############################
+- name: create-pks-cli-user
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed:
+      - deploy-pks
+      trigger: true    
+  - task: configure-pks-cli-user
+    file: pcf-lab-pipelines/tasks/all/configure-pks-cli-user/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPSMAN_USERNAME: {{opsman_admin_username}}
+      OPSMAN_PASSWORD: {{opsman_admin_password}}
+      OPSMAN_CLIENT_ID: ""
+      OPSMAN_CLIENT_SECRET: ""
+      PKS_API_DOMAIN: {{pks_api_domain}}
+      PKS_CLI_USERNAME: {{pks_cli_username}}
+      PKS_CLI_USEREMAIL: {{pks_cli_useremail}}
+      PKS_CLI_PASSWORD: {{pks_cli_password}}
+###########################
+## Job - Create PKS Cluster##
+###########################
+- name: create-pks-cluster
+  plan:
+  - aggregate:
+    - get: pcf-lab-pipelines
+      passed:
+      - create-pks-cli-user
+      trigger: true      
+  - task: create-cluster
+    file: pcf-lab-pipelines/tasks/all/pks-create-cluster/task.yml
+    params:
+        PKS_API: {{pks_api_domain}}
+        PKS_CLI_USERNAME: {{pks_cli_username}}
+        PKS_CLI_PASSWORD: {{pks_cli_password}}
+        PKS_SERVICE_PLAN_NAME: "small"
+        PKS_CLUSTER_NAME: {{pks_cluster_name}}
+        PKS_CLUSTER_MASTER_HOSTNAME: {{pks_cluster_externalhostname}}
+        PKS_CLUSTER_NUMBER_OF_WORKERS: 2

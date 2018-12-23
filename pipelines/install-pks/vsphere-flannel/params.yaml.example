@@ -1,0 +1,64 @@
+# vCenter configuration
+vcenter_ca_cert:           # vCenter CA cert at the API endpoint; enter a value if `vcenter_insecure: 0`
+vcenter_datacenter:        # vCenter datacenter
+vcenter_datastore:         # vCenter datastore name to deploy Ops Manager in
+vcenter_host:            # vCenter host or IP
+vcenter_insecure: 1         # vCenter skip TLS cert validation; enter `1` to disable cert verification, `0` to enable verification
+vcenter_pwd:                # vCenter password
+vcenter_usr:             # vCenter username. If user is tied to a domain, then escape the \, example `domain\\user`
+
+# vCenter network name to use to deploy Ops Manager in
+om_vm_network: 
+
+# vCenter Cluster or Resource Pool to use to deploy Ops Manager.
+# Possible formats:
+#   cluster:       /<Data Center Name>/host/<Cluster Name>
+#   resource pool: /<Data Center Name>/host/<Cluster Name>/Resources/<Resource Pool Name>
+om_resource_pool: 
+
+# Optional - vCenter folder to put Ops Manager in
+# Format: /<Data Center Name>/vm/<folder_name>
+om_vm_folder: 
+
+# Optional - vCenter host to deploy Ops Manager in
+om_vm_host:
+
+# Name to use for Ops Manager VM
+om_vm_name: 
+
+# FQDN to access Ops Manager without protocol (will use https), ex: opsmgr.example.com
+opsman_domain_or_ip_address: 
+
+# IP to assign to Ops Manager VM
+om_ip: 
+
+# Netmask for Ops Manager network
+om_netmask: 
+
+# Gateway for Ops Manager network
+om_gateway: 
+
+# Comma separated list of DNS servers used by Ops Manager
+om_dns_servers: 
+
+# SSH password for Ops Manager (ssh user is ubuntu)
+opsman_ssh_password: 
+
+# Comma-separated list of NTP Servers
+om_ntp_servers: time.google.com
+
+# Disk type for Ops Manager VM (thick|thin)
+opsman_disk_type: "thin"
+
+# Whether to power on Ops Manager VM after creation
+om_vm_power_state: true
+
+# PCF Ops Manager minor version to track/
+opsman_major_minor_version: ^2\.2\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
+
+# Pivnet token for downloading resources from Pivnet. Find this token at https://network.pivotal.io/users/dashboard/edit-profile
+pivnet_token: 
+
+# opsman_admin_username/opsman_admin_password needs to be specified
+opsman_admin_username: admin       # Username for Ops Manager admin account
+opsman_admin_password:        # Password for Ops Manager admin account
