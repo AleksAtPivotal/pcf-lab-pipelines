@@ -1,0 +1,15 @@
+# This key must be a key with admin access
+aws_access_key_id: CHANGEME
+aws_secret_access_key: CHANGEME
+
+# For terraform state file (http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
+S3_ENDPOINT: https://s3.amazonaws.com
+S3_OUTPUT_BUCKET: CHANGEME
+
+aws_region: us-east-1
+
+# PCF Ops Manager minor version to track
+opsman_major_minor_version: ^2\.4\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.4\.[0-9]+$ will track 2.4.x versions)
+
+# Pivnet token for downloading resources from Pivnet. Find this token at https://network.pivotal.io/users/dashboard/edit-profile
+pivnet_token: CHANGEME

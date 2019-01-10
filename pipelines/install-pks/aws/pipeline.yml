@@ -1,0 +1,100 @@
+groups:
+
+- name: pks-deploy
+  jobs:
+  - bootstrap-terraform-state
+  - create-infrastructure
+
+resource_types:
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+resources:
+- name: pcf-lab-pipelines
+  type: git
+  source:
+    uri: https://github.com/alekssaul/pcf-lab-pipelines.git
+    branch: "pks-aws"
+    #tag_filter: "dev"
+- name: terraform-state
+  type: s3
+  source:
+    disable_ssl: false
+    access_key_id: {{aws_access_key_id}}
+    secret_access_key: {{aws_secret_access_key}}
+    endpoint: {{S3_ENDPOINT}}
+    bucket: {{S3_OUTPUT_BUCKET}}
+    region_name: {{aws_region}}
+    versioned_file: terraform.tfstate
+- name: pivnet-opsmgr
+  type: pivnet
+  source:
+    api_token: {{pivnet_token}}
+    product_slug: ops-manager
+    product_version: {{opsman_major_minor_version}}
+    sort_by: semver
+- name: pcf-pipelines
+  type: git
+  source:
+    uri: https://github.com/pivotal-cf/pcf-pipelines.git
+    branch: master
+    tag_filter: "v0.23.12"
+
+jobs:
+- name: bootstrap-terraform-state
+  serial_groups: [terraform]
+  plan:
+  - get: pcf-pipelines
+  - task: create-terraform-state
+    params:
+      S3_BUCKET_TERRAFORM: {{S3_OUTPUT_BUCKET}}
+      S3_ENDPOINT: {{S3_ENDPOINT}}
+      S3_REGION: {{aws_region}}
+      AWS_ACCESS_KEY_ID: {{aws_access_key_id}}
+      AWS_SECRET_ACCESS_KEY: {{aws_secret_access_key}}
+    file: pcf-pipelines/tasks/create-initial-terraform-state/task.yml
+
+- name: create-infrastructure
+  serial_groups: [terraform]
+  plan:
+  - aggregate:
+    - get: pcf-pipelines
+    - get: pcf-lab-pipelines
+    - get: terraform-state
+    - get: pivnet-opsmgr
+      params:
+        globs: ["*AWS.yml"]
+  - task: find-ami
+    params:
+      REGION: {{aws_region}}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: pcfnorm/rootfs
+      inputs:
+      - name: pivnet-opsmgr
+      outputs:
+      - name: ami
+      params:
+        REGION:
+      run:
+        path: bash
+        args:
+        - -c
+        - |
+          ami=$(grep $REGION pivnet-opsmgr/*.yml | cut -d' ' -f2)
+          echo $ami > ami/ami
+  - task: create-infrastructure
+    file: pcf-lab-pipelines/pipelines/install-pks/aws/tasks/prepare-aws/task.yml
+    params:
+      aws_access_key_id: {{aws_access_key_id}}
+      aws_secret_access_key: {{aws_secret_access_key}}
+    ensure:
+      put: terraform-state
+      params:
+        file: terraform-state-output/terraform.tfstate
