@@ -94,6 +94,10 @@ jobs:
     params:
       aws_access_key_id: {{aws_access_key_id}}
       aws_secret_access_key: {{aws_secret_access_key}}
+      aws_key_name: {{aws_key_name}}
+      aws_region: {{aws_region}}
+      OPSMAN_ALLOW_SSH_CIDR_RANGES: {{opsman_allow_ssh_cidr_ranges}}
+      OPSMAN_ALLOW_HTTPS_CIDR_RANGES: {{opsman_allow_https_cidr_ranges}}
     ensure:
       put: terraform-state
       params:

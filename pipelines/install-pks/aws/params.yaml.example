@@ -13,3 +13,12 @@ opsman_major_minor_version: ^2\.4\.[0-9]+$ # Ops Manager minor version to track 
 
 # Pivnet token for downloading resources from Pivnet. Find this token at https://network.pivotal.io/users/dashboard/edit-profile
 pivnet_token: CHANGEME
+
+# Upload PEM to AWS as the below key pair name
+aws_key_name: CHANGEME
+
+# CIDRs to allow SSH access to Operations Manager from; configure PEM as well with the private key
+opsman_allow_ssh_cidr_ranges:
+
+# CIDRs to allow HTTPS access to Operations Manager from
+opsman_allow_https_cidr_ranges:
