@@ -6,7 +6,7 @@ image_resource:
   source:
     repository: pcfnorm/rootfs
 inputs:
-  - name: pcf-pipelines 
+  - name: pcf-lab-pipelines 
   - name: terraform-state
   - name: ami
 outputs:
