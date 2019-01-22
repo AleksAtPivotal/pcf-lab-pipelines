@@ -224,9 +224,6 @@ cf_properties=$(
       },
       ".diego_brain.static_ips": {
         "value": $ssh_static_ips
-      },
-      ".mysql_proxy.static_ips": {
-        "value": $mysql_static_ips
       }
     }
 

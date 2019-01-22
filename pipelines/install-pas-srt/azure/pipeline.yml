@@ -235,7 +235,7 @@ jobs:
       OPS_MGR_PWD: {{opsman_admin_password}}
       OPS_MGR_SSL_PUB: {{opsman_ssl_public}}
       OPS_MGR_SSL_PRIV: {{opsman_ssl_private}}
-      
+      PIVNET_API_TOKEN: {{pivnet_token}}
 
 ###########################
 ## Job - Config-Director ##
@@ -443,7 +443,6 @@ jobs:
       ALLOW_APP_SSH_ACCESS: {{allow_app_ssh_access}}
       TCP_ROUTER_STATIC_IPS: {{tcp_router_static_ips}}
       SSH_STATIC_IPS: {{ssh_static_ips}}
-      MYSQL_STATIC_IPS: {{mysql_static_ips}}
       MYSQL_PROXY_INSTANCES: {{mysql_proxy_instances}}
       MYSQL_INSTANCES: {{mysql_instances}}
       BACKUP_PREPARE_INSTANCES: {{backup_prepare_instances}}
