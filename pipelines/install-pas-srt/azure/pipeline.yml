@@ -56,13 +56,13 @@ resources:
   type: git
   source:
     uri: https://github.com/pivotal-cf/pcf-pipelines.git
-    tag_filter: "*0.23.8"
+    tag_filter: "*0.23.12"
 
 - name: pcf-lab-pipelines
   type: git
   source:
     uri: https://github.com/alekssaul/pcf-lab-pipelines.git
-    branch: "dev"
+    branch: "v2.4"
 
 - name: pivnet-opsmgr
   type: pivnet
@@ -203,6 +203,7 @@ jobs:
   plan:
   - aggregate:
     - get: pcf-pipelines
+    - get: pcf-lab-pipelines
     - get: pivnet-opsmgr
       passed: [create-infrastructure]
       trigger: true
@@ -224,6 +225,17 @@ jobs:
         OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
         PCF_OPSMAN_ADMIN: {{opsman_admin_username}}
         PCF_OPSMAN_ADMIN_PASSWORD: {{opsman_admin_password}}
+
+
+  - task: config-opsman-ssl
+    file: pcf-lab-pipelines/tasks/all/config-opsman-ssl/task.yml
+    params:
+      OPSMAN_DOMAIN_OR_IP_ADDRESS: {{opsman_domain_or_ip_address}}
+      OPS_MGR_USR: {{opsman_admin_username}}
+      OPS_MGR_PWD: {{opsman_admin_password}}
+      OPS_MGR_SSL_PUB: {{opsman_ssl_public}}
+      OPS_MGR_SSL_PRIV: {{opsman_ssl_private}}
+      
 
 ###########################
 ## Job - Config-Director ##
@@ -280,6 +292,7 @@ jobs:
         PCF_SSH_KEY_PUB: {{pcf_ssh_key_pub}}
         PCF_SSH_KEY_PRIV: {{pcf_ssh_key_priv}}
         TRUSTED_CERTIFICATES: {{trusted_certificates}}
+
 
 ###########################
 ## Job - Deploy-Director ##

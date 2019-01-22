@@ -268,3 +268,7 @@ tcp_routing_ports:                      # A comma-separated list of ports and hy
 
 # Optional PEM-encoded certificates to add to BOSH VMs
 trusted_certificates:
+
+# Optional OpsMan SSL certs
+opsman_ssl_private:
+opsman_ssl_public:

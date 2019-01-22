@@ -1,0 +1,22 @@
+---
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: pcfnorm/rootfs
+
+
+params:
+  OPSMAN_DOMAIN_OR_IP_ADDRESS:
+  OPS_MGR_USR:
+  OPS_MGR_PWD:
+  OPS_MGR_SSL_PUB:
+  OPS_MGR_SSL_PRIV:
+
+inputs:
+  - name: pcf-lab-pipelines
+
+run:
+  path: pcf-lab-pipelines/tasks/all/config-opsman-ssl/task.sh
