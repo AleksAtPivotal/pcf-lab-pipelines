@@ -1,0 +1,2 @@
+# PCF Ops Manager minor version to track
+opsman_major_minor_version: ^2\.4\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)

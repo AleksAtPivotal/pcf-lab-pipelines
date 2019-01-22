@@ -1,644 +1,479 @@
-enable_ansible_debug: false # set value to true for verbose output from ansible
-nsx_t_installer: nsx-t-gen  # Set to name of installer or env or any value so resources can be identified
-nsx_t_version: 2.1
+# vCenter configuration
+vcenter_ca_cert:           # vCenter CA cert at the API endpoint; enter a value if `vcenter_insecure: 0`
+vcenter_datacenter: dc01       # vCenter datacenter
+vcenter_datastore: datastore1        # vCenter datastore name to deploy Ops Manager in
+vcenter_host: vcenter.lab.alekssaul.com           # vCenter host or IP
+vcenter_insecure: 1         # vCenter skip TLS cert validation; enter `1` to disable cert verification, `0` to enable verification
+vcenter_pwd:                 # vCenter password
+vcenter_usr: "Administrator@vsphere.local"            # vCenter username. If user is tied to a domain, then escape the \, example `domain\\user`
 
-# vCenter details to deploy the Mgmt OVAs (Mgr, Edge, Controller)
-vcenter_host: vcsa-01.corp.local.io       # EDIT - this is for deployment of the ovas for the mgmt plane
-vcenter_usr: administrator@vsphere.local  # EDIT - this is for deployment of the ovas for the mgmt plane
-vcenter_pwd: 39adladfasdfl!               # EDIT - this is for deployment of the ovas for the mgmt plane
-vcenter_datacenter: Datacenter            # EDIT
-vcenter_datastore: Datastore              # EDIT
-vcenter_cluster: Cluster                  # EDIT
-vcenter_manager: vcenter-1                # EDIT
-vcenter_rp:                               # EDIT - resource pool where mgmt plane vms would get deployed
-
-# OVA general network settings
-ntpservers: 10.13.12.2                    # EDIT
-mgmt_portgroup: 'VM Network'              # EDIT
-dnsserver: 10.13.12.2                     # EDIT
-dnsdomain: corp.local.io                  # EDIT
-defaultgateway: 10.13.12.1                # EDIT
-netmask: 255.255.255.0                    # EDIT
-
-# Host a Webserver to serve the ova images and ovftool
-# Please edit the endpoint and the file names
-nsx_image_webserver: http://10.85.24.5:9080
-
-# Download NSX-T 2.1 bits from
-# https://my.vmware.com/group/vmware/details?downloadGroup=NSX-T-210&productId=673
-nsx_mgr_ova: nsx-unified-appliance-2.1.0.0.0.7395503.ova
-nsx_controller_ova: nsx-controller-2.1.0.0.0.7395493.ova
-nsx_edge_ova: nsx-edge-2.1.0.0.0.7395502.ova
-# Ensure ovftool is minimally v4.2
-# https://my.vmware.com/group/vmware/details?productId=614&downloadGroup=OVFTOOL420#
-ovftool_image: VMware-ovftool-4.2.0-5965791-lin.x86_64.bundle
-
-# The Esxi Hosts can be added to transport nodes in two ways:
-# a) specify the esxi hosts individually - first checked for
-# b) or use compute_vcenter_manager to add hosts under a specific vcenter as transport nodes
-
-# Specify passwd of the esxi hosts that should be used for nsx-t
-esxi_hosts_root_pwd: rootPasswd  # EDIT - Root password for the esxi hosts
-
-# Specify FQDN, ip (and passwd if they are different) for each of the esxi hosts that should be used for nsx-t
-# Listing the individual hosts that needs to be used
-esxi_hosts_config: |
-  esxi_hosts:
-  - name: esxi-host1.corp.local.io
-    ip: 10.13.12.10
-    root_pwd: rootPasswd
-# - name: esxi-host2.corp.local.io
-#   ip: 10.13.12.11
-#   root_pwd: rootPasswd
-
-# Using a separate compute manager to specify esxi hosts
-# If filled, then change the the esxi_hosts_config section to be empty
-# Sample empty config:
-# esxi_hosts_config: # Provide space after colon
-
-# Handle multiple vcenter and compute clusters for Esxi Hosts
-# This would override esxi_hosts_config
-compute_manager_configs: |
-  compute_managers:
-  - vcenter_name: vcenter-01
-    vcenter_host: vcenter-01.corp.local
-    vcenter_usr: administrator@vsphere.local
-    vcenter_pwd: VMWare1!
-    # Multiple clusters under same vcenter can be specified
-    clusters:
-    - vcenter_cluster: Cluster1
-      overlay_profile_mtu: 1600 # Min 1600
-      overlay_profile_vlan: EDIT_ME # VLAN ID for the TEP/Overlay network
-      # Specify an unused vmnic on esxi host to be used for nsx-t
-      # can be multiple vmnics separated by comma
-      uplink_vmnics: vmnic1 # vmnic1,vmnic2...
-    # - vcenter_cluster: Cluster2
-    #   overlay_profile_mtu: 1600 # Min 1600
-    #   overlay_profile_vlan: EDIT_ME # VLAN ID for the TEP/Overlay network
-    #   # Specify an unused vmnic on esxi host to be used for nsx-t
-    #   # can be multiple vmnics separated by comma
-    #   uplink_vmnics: vmnic1 # vmnic1,vmnic2...
-  # Multiple vcenters can be specified
-  # - vcenter_name: vcenter-02
-  #   vcenter_host: vcenter-02.corp.local
-  #   vcenter_usr: administrator@vsphere.local
-  #   vcenter_pwd: VMWare2!
-  #   clusters:
-  #   - vcenter_cluster: Cluster4
-  #     overlay_profile_mtu: 1600 # Min 1600
-  #     overlay_profile_vlan: EDIT_ME # VLAN ID for the TEP/Overlay network
-  #     uplink_vmnics: vmnic1 # vmnic1,vmnic2...
+nsxt_hostname_or_ipaddress: "nsxmgr.lab.alekssaul.com"
+nsxt_admin_username: admin
+nsxt_admin_password: 
 
 
+# vCenter network name to use to deploy Ops Manager in
+om_vm_network: PKS-Infra
 
-# Using a separate vCenter to add Edges
-# Edge Specific vCenter settings
-# If Edges are going to use the same vCenter as Mgr, then dont set any of the following properties
-edge_vcenter_host:         # EDIT - If filled, then Edges would use this separate vcenter
-edge_vcenter_usr:          # EDIT -  Use Edge specific vCenter
-edge_vcenter_pwd:          # EDIT -  Use Edge specific vCenter
-edge_vcenter_datacenter:   # EDIT -  Use Edge specific vCenter
-edge_vcenter_datastore:    # EDIT -  Use Edge specific vCenter
-edge_vcenter_cluster:      # EDIT -  Use Edge specific vCenter
-edge_vcenter_rp:           # EDIT -  Use Edge specific vCenter
-edge_ntpservers:           # EDIT -  Use Edge specific vCenter
-edge_mgmt_portgroup:       # EDIT -  Use Edge specific vCenter
-edge_dnsserver:            # EDIT -  Use Edge specific vCenter
-edge_dnsdomain:            # EDIT -  Use Edge specific vCenter
-edge_defaultgateway:       # EDIT -  Use Edge specific vCenter
-edge_netmask:              # EDIT -  Use Edge specific vCenter
+# vCenter Cluster or Resource Pool to use to deploy Ops Manager.
+# Possible formats:
+#   cluster:       /<Data Center Name>/host/<Cluster Name>
+#   resource pool: /<Data Center Name>/host/<Cluster Name>/Resources/<Resource Pool Name>
+om_resource_pool: /dc01/host/cluster01/Resources/pks-az1
 
-# Edit fololowing parameters
-nsx_t_manager_host_name: nsx-t-mgr.corp.local.io # Set as FQDN, will be used also as certificate common name
-nsx_t_manager_vm_name: 'NSX-T Mgr'               # Can have spaces
-nsx_t_manager_ip: 10.13.12.50
-nsx_t_manager_admin_user: admin
-nsx_t_manager_admin_pwd: VMware1!         # Min 8 chars, upper, lower, number, special digit
-nsx_t_manager_root_pwd: VMware1!          # Min 8 chars, upper, lower, number, special digit
+# Optional - vCenter folder to put Ops Manager in
+# Format: /<Data Center Name>/vm/<folder_name>
+om_vm_folder: 
 
-# Following properties can be used for deploying controller to same cluster/rp
-nsx_t_controller_host_prefix: nsx-t-ctl   # Without spaces, Generated controller would be nsx-t-ctrl-1.corp.local.io,...
-nsx_t_controller_vm_name_prefix: 'NSX-T Controller' # Generated edge host name would be "NSX-T Controller-1"
-nsx_t_controller_ips: 10.13.12.51,10.13.12.52,10.13.12.53 # Should be 1 or 3 ips to maintain quorum for Controller Cluster
-nsx_t_controller_root_pwd: VMware1!       # Min 8 chars, upper, lower, number, special digit
-nsx_t_controller_cluster_pwd: VMware1!    # Min 8 chars, upper, lower, number, special digit
+# Optional - vCenter host to deploy Ops Manager in
+om_vm_host:
 
-# Controllers would be deployed to the same Mgmt Cluster
-# as specified by the vcenter_host & vcenter_cluster
-# NOT RECOMMENDED To use separate cluster for each controller
-nsx_t_controllers_config:
-# CAUTION: Using different clusters for controllers require complex anti-affinity rules setup
-# If really want to spread controllers across different controllers,
-# remove previous line (the empty nsx_t_controllers_config) and
-# uncomment following nsx_t_controllers_config section, edit it to allow different clusters and resource pool per controller
-# nsx_t_controllers_config: |
-#   controllers:
-#     host_prefix: nsx-t-ctl  # EDIT_ME
-#     vm_name_prefix: NSX-T-Controller # EDIT_ME
-#     root_pwd: VMware1!       # EDIT_ME
-#     cluster_pwd: VMware1!    # EDIT_ME
-#     # Should be 1 or 3 members
-#     members:
-#     # EDIT ME to specify the correct cluster,
-#     #   resource pool, datastore per controller member
-#     - ip: 10.13.12.51        # EDIT_ME
-#       cluster: Cluster1      # EDIT_ME
-#       resource_pool: nsx_rp1 # EDIT_ME
-#       datastore: store1      # EDIT_ME
-#     - ip: 10.13.12.52        # EDIT_ME
-#       cluster: Cluster2      # EDIT_ME
-#       resource_pool: nsx_rp2 # EDIT_ME
-#       datastore: store2      # EDIT_ME
-#     - ip: 10.13.12.53        # EDIT_ME
-#       cluster: Cluster3      # EDIT_ME
-#       resource_pool: nsx_rp3 # EDIT_ME
-#       datastore: store3      # EDIT_ME
+# Name to use for Ops Manager VM
+om_vm_name: opsmanpksnsx
 
-nsx_t_edge_host_prefix: nsx-t-edge        # Without spaces, generated edge would be nsx-t-edge-1.corp.local.io,...
-nsx_t_edge_vm_name_prefix: 'NSX-T Edge'   # Generated edge host name would be "NSX-T Edge-1"
-nsx_t_edge_ips: 10.13.12.54,10.13.12.55   # comma separated ips, requires min 2 for HA
-nsx_t_edge_root_pwd: VMware1!
-nsx_t_edge_portgroup_ext: EDIT_ME_vlan-name-for-uplink     # For external routing
-nsx_t_edge_portgroup_transport: EDIT_ME_vlan-name-for-TEP  # For TEP/overlay
+# FQDN to access Ops Manager without protocol (will use https), ex: opsmgr.example.com
+opsman_domain_or_ip_address: opsman-pks-nsx.lab.alekssaul.com
 
-# If ova deployment succeeded but controller membership failed or edges didnt get to join for any reason
-# enable rerun of the configure controllers
-rerun_configure_controllers: false  # set it to true if you want to rerun the configure controllers
-                                    # (as part of base ova install job) even as ova deployment succeeded
+# IP to assign to Ops Manager VM
+om_ip: 192.168.50.2
 
-# Edge network interfaces
-# Network1 and Network4 are for mgmt and not used for uplink
-# Network2 is for external uplink
-# Network3 is for overlay
-# Change only if necessary
-nsx_t_edge_overlay_interface: fp-eth1 # Wired to Network3
-nsx_t_edge_uplink_interface: fp-eth0  # Wired to Network2
+# Netmask for Ops Manager network
+om_netmask: 255.255.255.0
 
-# Tunnel endpoint network ip pool - change pool_end based on # of members in the tep pool
-nsx_t_tep_pool_name: tep-ip-pool
-nsx_t_tep_pool_cidr: 192.168.213.0/24
-nsx_t_tep_pool_gateway: 192.168.213.1
-nsx_t_tep_pool_start: 192.168.213.10
-nsx_t_tep_pool_end: 192.168.213.200
-#nsx_t_tep_pool_nameserver: 192.168.213.2 # Not required
+# Gateway for Ops Manager network
+om_gateway: 192.168.50.1
 
-# Memory reservation is turned ON by default with the NSX-T OVAs.
-# This would mean a deployment of an edge or a mgr would reserve full memory
-# leading to memory constraints
-# if nsx_t_keep_reservation to true  - would keep reservation ON, recommended for production setups.
-# if nsx_t_keep_reservation to false - would turn reservation OFF, recommended for POCs, smaller setups.
-nsx_t_keep_reservation: true # for Prod setup
+# Comma separated list of DNS servers used by Ops Manager
+om_dns_servers: 8.8.8.8
 
-# Default Sizing of NSX-T VMs
-# Manager Sizing
-# small  : 2 vCPU,  8GB RAM
-# medium : 4 vCPU, 16GB RAM - default with OVA
-# large  : 8 vCPU, 32GB RAM
-# Controller Sizing
-# default: 4 vCPU, 16GB RAM
-# Edge Instance Sizing
-# small  : 2 vCPU,  4GB RAM - Too small - dont use
-# medium : 4 vCPU,  8GB RAM - default with OVA
-# large  : 8 vCPU, 16GB RAM
+# SSH password for Ops Manager (ssh user is ubuntu)
+opsman_ssh_password: "Pivotal"
 
-# Controller is fixed to the 4 vCPU and 16 GB RAM
-# Change default size for deployment for edge and mgr
-# Size of the edge determines size of loadbalancers and # of lbrs.
-# So, choose the size of edge based on requirements
-nsx_t_mgr_deploy_size: small   # Recommended for real barebones demo, smallest setup
-#nsx_t_edge_deploy_size: medium # Recommended for POCs, smaller setup (# of lbrs very limited)
-nsx_t_edge_deploy_size: large  # Recommended when 4 small lbrs are required
+# Comma-separated list of NTP Servers
+om_ntp_servers: time.google.com
 
-# More control over memory and vcpu to use
-# Not exposed and support removed
-# nsx_t_sizing_spec: |
-#   nsx_t_sizing:
-#     mgr:
-#       cpu: 2
-#       memory: 8192 # in MB, needs to be multiples of 1024
-#     controller:
-#       # Controller would be resized from 4vCPU/16GB to 2vCPU/8GB
-#       cpu: 2
-#       memory: 8192 # in MB, needs to be multiples of 1024
-#     edge:
-#       cpu: 2
-#       memory: 8192 # in MB, needs to be multiples of 1024
+# Disk type for Ops Manager VM (thick|thin)
+opsman_disk_type: "thin"
 
+# Whether to power on Ops Manager VM after creation
+om_vm_power_state: true
 
-nsx_t_overlay_hostswitch: hostswitch2
-nsx_t_vlan_hostswitch: hostswitch1
+# PCF Ops Manager minor version to track
+opsman_major_minor_version: ^2\.4\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
 
-# For Edge External uplink
-# Check with network admin if its tagged or untagged
-nsx_t_transport_vlan: 0
+# Pivnet token for downloading resources from Pivnet. Find this token at https://network.pivotal.io/users/dashboard/edit-profile
+pivnet_token: "teafdsa"
 
-nsx_t_vlan_transport_zone: vlan-tz
-nsx_t_overlay_transport_zone: overlay-tz
+# opsman_admin_username/opsman_admin_password needs to be specified
+opsman_admin_username: admin       # Username for Ops Manager admin account
+opsman_admin_password: "Pivotal"       # Password for Ops Manager admin account
 
-nsx_t_pas_ncp_cluster_tag: pas1
+# AZ configuration for Ops Director
+az_1_cluster_name: cluster01            # Name of cluster in vCenter for AZ1
+az_1_name: az1                    # Logical name of availability zone. No spaces or special characters.
+az_1_rp_name: pks-az1                 # Resource pool name in vCenter for AZ1
+az_2_cluster_name: cluster01            # Name of cluster in vCenter for AZ2
+az_2_name: az2                    # Logical name of availability zone. No spaces or special characters.
+az_2_rp_name: pks-az2                 # Resource pool name in vCenter for AZ2
+az_3_cluster_name: cluster01            # Name of cluster in vCenter for AZ3
+az_3_name: az3                    # Logical name of availability zone. No spaces or special characters.
+az_3_rp_name: pks-az3                 # Resource pool name in vCenter for AZ3
 
-nsx_t_edge_cluster: 'Edge Cluster'
+vm_disk_type: "thin"
 
-# For outbound uplink connection used by Edge
-nsx_t_single_uplink_profile_name: "single-uplink-profile"
-nsx_t_single_uplink_profile_mtu: 1600 # Min 1600
-nsx_t_single_uplink_profile_vlan: 0 # Default
+ephemeral_storage_names: datastore2
+persistent_storage_names: datastore2
 
-# For internal overlay connection used by Esxi hosts
-nsx_t_overlay_profile_name: "host-overlay-profile"
-nsx_t_overlay_profile_mtu: 1600 # Min 1600
-nsx_t_overlay_profile_vlan: EDIT_ME # VLAN ID for the TEP/Overlay network
+# vSphere datastore folder (such as pcf_disk) where attached disk images will be created
+bosh_disk_path: "pks_disk"
 
-# Specify an unused vmnic on esxi host to be used for nsx-t
-# can be multiple vmnics separated by comma
-nsx_t_esxi_vmnics: vmnic1 # vmnic1,vmnic2...
+# vSphere datacenter folder (such as pcf_templates) where templates will be placed
+bosh_template_folder: "pks_templates"
 
-# Configs for T0Router (only one per run), T1Routers, Logical switches and tags...
-# Make sure the ncp/cluster tag matches the one defined at the top level.
-# Expects to use atleast 2 edge instances for HA that need to be installed
-nsx_t_t0router_spec: |
-  t0_router:
-    name: DefaultT0Router
-    ha_mode: 'ACTIVE_STANDBY'
-    # Specify the edges to be used for hosting the T0Router instance
-    edge_indexes:
-      # Index starts from 1 -> denoting nsx-t-edge-01
-      primary: 1   # Index for primary edge to be used
-      secondary: 2 # Index for secondary edge to be used
-    vip: 10.13.12.103/29  # T0 router vip - make sure this range does not intrude with the external vip ranges
-    ip1: 10.13.12.101/29  # T0 router uplink ports - make sure this range does not intrude with the external vip ranges
-    ip2: 10.13.12.102/29  # T0 router uplink ports - make sure this range does not intrude with the external vip ranges
-    vlan_uplink: 0
-    static_route:
-      next_hop: 10.13.12.1
-      network: 0.0.0.0/0
-      admin_distance: 1
-    tags:
-      ncp/cluster: 'pas1' # Should match the top level ncp/cluster tag value
-      ncp/shared_resource: 'true' # required for PKS
-      testtag: 'testpas1'
+# vSphere datacenter folder (such as pcf_vms) where VMs will be placed
+bosh_vm_folder: "pks_vms"
 
-# T1 Logical Router with associated logical switches
-# Add additional or comment off unnecessary t1 routers and switches as needed
-# Can have 3 different setups:
-# 1: One shared mgmt T1 Router and infra logical switch for both PKS & PAS
-# 2: One mgmt T1 Router and infra logical switch for either PKS or PAS..
-#    Comment off the T1 router not required
-# 3: Separate mgmt T1 Router and infra logical switch for each PKS and PAS..
-#    Add additional T1Router-Mgmt2 as needed with its infra logical switch
-# Name the routers and logical switches and cidrs differently to avoid conflict
-nsx_t_t1router_logical_switches_spec: |
-  t1_routers:
-  # Add additional T1 Routers or collapse switches into same T1 Router as needed
-  # Comment off the following T1 Routers if there is no PAS
-  - name: T1-Router-PAS-Infra
-    # No need for stateful routing
-    switches:
-    - name: PAS-Infra
-      logical_switch_gw: 192.168.1.1 # Last octet should be 1 rather than 0
-      subnet_mask: 24
+icmp_checks_enabled: false
 
-  - name: T1-Router-PAS-ERT
-    # This T1 would run ERT where the GoRouter requires LBR in front which requires stateful routing
-    # So pin to the edges
-    pinned_to_edges: true       # Pin to edges.
-    switches:
-    - name: PAS-ERT
-      logical_switch_gw: 192.168.2.1 # Last octet should be 1 rather than 0
-      subnet_mask: 24
+# Infrastructure Configuration
+infra_excluded_range: 192.168.50.0-192.168.50.10         # Infrastructure network exclusion range
+infra_network_name: "pks-infrastructure"
+infra_nw_azs: az1,az2,az3                  # Comma separated list of AZ’s to be associated with this network
+infra_nw_cidr: 192.168.50.0/24               # Infrastructure network CIDR, ex: 10.0.0.0/22
+infra_nw_dns: 8.8.8.8                 # Infrastructure network DNS
+infra_nw_gateway: 192.168.50.1             # Infrastructure network Gateway
+infra_vsphere_network: PKS-Infra       # vCenter Infrastructure network name
 
-  - name: T1-Router-PAS-Services
-    # No need for stateful routing
-    switches:
-    - name: PAS-Services
-      logical_switch_gw: 192.168.3.1 # Last octet should be 1 rather than 0
-      subnet_mask: 24
+services_excluded_range: 192.168.60.0-192.168.60.10        # Services network exclusion range
+services_network_name: "pks-services"
+services_nw_azs: az1,az2,az3              # Comma separated list of AZ’s to be associated with this network
+services_nw_cidr: 192.168.60.0/24             # Services network CIDR, ex: 10.0.0.0/22
+services_nw_dns: 8.8.8.8              # Services network DNS
+services_nw_gateway: 192.168.60.1          # Services network Gateway
+services_vsphere_network: PKS-Services     # vCenter Services network name
 
-  # - name: T1-Router-PAS-DynamicServices
-  #   # No need for stateful routing
-  #   switches:
-  #   - name: PAS-DynamicServices
-  #     logical_switch_gw: 192.168.4.1 # Last octet should be 1 rather than 0
-  #     subnet_mask: 24
+enable_vm_resurrector: true
+max_threads: 30
+trusted_certificates:
+nsx_networking_enabled: false
+pks_api_domain: pksapi.lab.alekssaul.com
 
-  # # Comment off the following T1 Routers if there is no PKS
-  # - name: T1-Router-PKS-Infra
-  #   # No need for stateful routing
-  #   switches:
-  #   - name: PKS-Infra
-  #     logical_switch_gw: 172.23.1.1 # Last octet should be 1 rather than 0
-  #     subnet_mask: 24
+pks_major_minor_version: ^1\.3\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
+
+pks_cli_username: pksuaa
+pks_cli_password: "Pivotal123!"
+pks_cli_useremail: asaul@pivotal.io
+
+pks_cluster_name: pksvsphere01
+pks_cluster_externalhostname: pksvsphere01.lab.alekssaul.com
+
+######## AZs and Networks configuration for the tile
+pks-networks: |
+  network:
+    name: ((infra_network_name))
+  other_availability_zones:
+  - name: ((az_1_name))
+  - name: ((az_2_name))
+  - name: ((az_3_name))
+  service_network:
+    name: ((services_network_name))
+  singleton_availability_zone:
+    name: ((az_1_name))
+
+pks-properties: |
+  ######## Certificate to secure the PKS API
+  .pivotal-container-service.pks_tls:
+    #
+    # The "generate_cert_domains" parameter controls the automatic certificates
+    #   generation behavior for this property.
+    #
+    # If auto-generation of certs is desired, leave this parameter un-commented
+    #   and update the array of domain names to be used for cert generation.
+    #   e.g. ["*.pks.mydomain.com","*.api.pks.mydomain.com"].
+    #   Leave parameters cert_pem and private_key_pem with empty values in this case.
+    #
+    # Otherwise, either comment out or delete this parameter line and
+    #   provide the certificate (cert_pem) and private key (private_key_pem) values
+    #   in the corresponding parameters further below.
+    #
+    generate_cert_domains: ["((pks_api_domain))"]
+    value:
+      cert_pem: | 
+        -----BEGIN CERTIFICATE-----
+        MIIEUDCCArigAwIBAgIQd4ou4/eV8Sk1iMlf/bSNsjANBgkqhkiG9w0BAQsFADB5
+        MR4wHAYDVQQKExVta2NlcnQgZGV2ZWxvcG1lbnQgQ0ExJzAlBgNVBAsMHmFzYXVs
+        QEFsZWtzcy1NYWNCb29rLVByby5sb2NhbDEuMCwGA1UEAwwlbWtjZXJ0IGFzYXVs
+        QEFsZWtzcy1NYWNCb29rLVByby5sb2NhbDAeFw0xODEwMjkxNzEyMzZaFw0yODEw
+        MjkxNzEyMzZaMFIxJzAlBgNVBAoTHm1rY2VydCBkZXZlbG9wbWVudCBjZXJ0aWZp
+        ggGBAA7FwTdBJQy3MjORsA23w6R5qSf3BEWEV+djdu3NytYYbf87+ua75/abv8tM
+        35rco7EQhuUrX4lcfTPwj3iTp+PsU540yoCEgw1k68cCpQY/ihaY3Rq1T13gNhNy
+        lR//K9Uqo/jK2OjJGQqJpLmnwCfva8JRh5Z1pjT2LcDI/SPkJXp39u0uFCmrJ2gA
+        og7EJZ1jsE8xm4jm0lbPB7vzrdwe2WpBbzYkiyPFJsjIUAN1dM/eEjDC2QUFhF3L
+        RevaZGiJD0Ye8abFlVI3ogqyQzK6zdLkx91Y5SFE1wl7oCYXqvgTYJYqX05X0XxN
+        RSe5S13prLJVlaT1vxUrqjPBm+mUIKKC9nMnmc6e4QDXPLiVKBaM1dcojOD57y31
+        GnhZNsBKk2JM2gvdIZ1Vm4xut/vq1lz6jxYGZQyEwOaqRxJz1LY3DEB8Tq8uk/uK
+        22I4W3IvT8BIfoDFEUpZMbWf6BaVwJGwYJf7/v8w0jBIwvA0Yt9qs/aWRaa5qDpT
+        J5vVqw==
+        -----END CERTIFICATE-----
+      private_key_pem: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC46pe2O+hmHC19
+        IiVA4XBQdR030S1Rw9kOx1xZBjS7Ht2cJp6W9RbERmZwuP11p9PqYOPEvMMXccul
+        QERHOSv+UQ3RW/KKrlD6dN4Im1ltSv0YknyslU1Tfg4joHmnxA57QmGKLSBkOOX1
+        BYsPNEC4/nWhtH+HVX42I0fo08iaL7JTqMTCROzBE0yrbtgNEvgnC2CXq+FbEbO/
+        gIRlGCoaPMx7ZzBo5Tk87WcHH4bt3psuTClt4z5esPAuZORF/g7UjtwWuYlGUCOk
+        i5AY6NvjTlNuaUaB8sjyHOYNRHIn32ksPnDk23eiEpEwc2SG+nQJBkK3xqbbYJfR
+        IlYgq8kY/QKBgBQCQOODmiftjTZHlXdsVdD1eGcmOYrjqnd0LFPtQ11EN55oGNbG
+        auqjE6FT6BPxDLnEMJ6TptFpgsfmpMwwhJHrMwJzYqEkhc4vjBd//loJPVyzKQcd
+        ApXA2Faj9H7fLKOxxH+BNTD0LPKH7zSydv28YIAdmZgmP6t3qfiGbxepAoGAfZ4k
+        7IllqNQZu8RFhJImvnwiHblkv010IYl7yJLOK0Uil4utQivjTOfGUXRZLDO2yXYF
+        fxkx3VECMlyXNnl2WIYBzmKTAJ64oCvmmb64O1+luePPCRBmbtF/kBxmY5xn3ZMB
+        ZSrPpVLQHdykVoLNObMmk9stbDYchIjtbyfcnoUCgYBniEceorrAJfQPTBut9BqR
+        8WJfELn6jQyaM+T7zrecaXPKkFiNh0zZSJiJulUtpo4x5GP7dDARZm+VNACZ2+8c
+        mxmPNBFTHFombDONQv3KEXVsSAmHEwXJWETM/mnlkLmTLsc1xZPTDOEj2AcQnTHI
+        cSZ+NXrHWXfNXmbk0zFDmw==
+        -----END PRIVATE KEY-----
+  ## API Hostname (FQDN)
+  .properties.pks_api_hostname:
+    value: ((pks_api_domain))
+  .properties.worker_max_in_flight:
+    value: 2
+  ######## Configuration for Plan 1
+  .properties.plan1_selector:
+    value: "Plan Active"
+  .properties.plan1_selector.active.name:
+    value: "small"  # the name that appears for end users to choose
+  .properties.plan1_selector.active.description:
+    value: "Small plan"
+  .properties.plan1_selector.active.master_az_placement:
+    value: [((az_1_name))]  # Specify the availability zones you want your master and ETCD nodes spread across equally. If only one master/ETCD has been selected, choose a single AZ for your singleton job.
+  .properties.plan1_selector.active.worker_az_placement:
+    value: [((az_1_name)),((az_2_name)),((az_3_name))]  # Specify the availability zones you want your worker nodes spread across equally.
+  .properties.plan1_selector.active.master_instances:
+    value: 1
+  .properties.plan1_selector.active.master_vm_type:
+    value: medium
+  .properties.plan1_selector.active.master_persistent_disk_type:
+    value: "10240"
+  .properties.plan1_selector.active.worker_vm_type:
+    value: medium
+  .properties.plan1_selector.active.worker_persistent_disk_type:
+    value: "10240"
+  .properties.plan1_selector.active.worker_instances:
+    value: 2    # The number of K8s worker instances
+  .properties.plan1_selector.active.errand_vm_type:
+    value: micro
+  .properties.plan1_selector.active.addons_spec:
+    value: "" # Kubernetes yml that contains specifications of addons to run on every cluster. This is an experimental feature. Please consider carefully before applying this to your plan
+  .properties.plan1_selector.active.allow_privileged_containers:
+    value: true  # Privileged containers run with host-like permissions. Allowing your users to deploy privileged containers in clusters using this plan can create security vulnerabilities and may impact other tiles. Use with caution.
+  .properties.plan1_selector.active.disable_deny_escalating_exec:
+    value: true  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
+  ######## Configuration for Plan 2 - "Plan Inactive" or "Plan Active"
+  .properties.plan2_selector:
+    value: "Plan Active"
+  .properties.plan2_selector.active.name:
+    value: "small-ha"  # the name that appears for end users to choose
+  .properties.plan2_selector.active.description:
+    value: "HA Plan"
+  .properties.plan2_selector.active.master_az_placement:
+    value: [((az_1_name)),((az_2_name)),((az_3_name))]   # Specify the AZ in which the cluster will be created
+  .properties.plan2_selector.active.worker_az_placement:
+    value: [((az_1_name)),((az_2_name)),((az_3_name))]   # Specify the availability zones you want your worker nodes spread across equally.
+  .properties.plan2_selector.active.master_instances:
+    value: 3
+  .properties.plan2_selector.active.master_vm_type:
+    value: medium
+  .properties.plan2_selector.active.master_persistent_disk_type:
+    value: "10240"
+  .properties.plan2_selector.active.worker_vm_type:
+    value: medium
+  .properties.plan2_selector.active.worker_persistent_disk_type:
+    value: "10240"
+  .properties.plan2_selector.active.worker_instances:
+    value: 2    # The number of K8s worker instances
+  .properties.plan2_selector.active.errand_vm_type:
+    value: micro
+  .properties.plan2_selector.active.addons_spec:
+    value: "" # Kubernetes yml that contains specifications of addons to run on every cluster. This is an experimental feature. Please consider carefully before applying this to your plan
+  .properties.plan2_selector.active.allow_privileged_containers:
+    value: true  # Privileged containers run with host-like permissions. Allowing your users to deploy privileged containers in clusters using this plan can create security vulnerabilities and may impact other tiles. Use with caution.
+  .properties.plan2_selector.active.disable_deny_escalating_exec:
+    value: true  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
+  ######## Configuration for Plan 3 - "Plan Inactive" or "Plan Active"
+  .properties.plan3_selector:
+    value: "Plan Inactive"
+  ### if plan 3 is to be activated, then uncomment and fill out the plan3 parameters below
+  ### otherwise, leave this section commented out to avoid Ops Manager parameter settings errors
+  # .properties.plan3_selector.active.name:
+  #   value: "large"  # the name that appears for end users to choose
+  # .properties.plan3_selector.active.description:
+  #   value: "Plan 3 description"
+  # .properties.plan3_selector.active.master_az_placement:
+  #   value: [( ( az_1_name ) )]  # Specify the AZ in which the cluster will be created
+  # .properties.plan3_selector.active.worker_az_placement:
+  #   value: [( ( az_1_name ) ),( ( az_2_name ) ),( ( az_3_name ) )]  # Specify the availability zones you want your worker nodes spread across equally.
+  # .properties.plan3_selector.active.master_instances:
+  #   value: 3
+  # .properties.plan3_selector.active.master_vm_type:
+  #   value: large
+  # .properties.plan3_selector.active.master_persistent_disk_type:
+  #   value: "10240"
+  # .properties.plan3_selector.active.worker_vm_type:
+  #   value: large
+  # .properties.plan3_selector.active.worker_persistent_disk_type:
+  #   value: "10240"
+  # .properties.plan3_selector.active.worker_instances:
+  #   value: 8    # The number of K8s worker instances
+  # .properties.plan3_selector.active.errand_vm_type:
+  #   value: micro
+  # .properties.plan3_selector.active.addons_spec:
+  #   value: "" # Kubernetes yml that contains specifications of addons to run on every cluster. This is an experimental feature. Please consider carefully before applying this to your plan
+  # .properties.plan3_selector.active.allow_privileged_containers:
+  #   value: false  # Privileged containers run with host-like permissions. Allowing your users to deploy privileged containers in clusters using this plan can create security vulnerabilities and may impact other tiles. Use with caution.
+  # .properties.plan3_selector.active.disable_deny_escalating_exec:
+  #   value: false  # This admission controller will deny exec and attach commands to pods that run with escalated privileges that allow host access. If checked, the admission controller will be disabled. Clusters in this plan can then create security vulnerabilities and may impact other tiles. Use with caution.
+  ######## Kubernetes cloud provider: GCP or vSphere, or AWS
+  .properties.cloud_provider:
+    value: vSphere
+  .properties.cloud_provider.vsphere.vcenter_master_creds:
+    value:
+       identity: ((vcenter_usr)) # vcenter_admin_username
+       password: ((vcenter_pwd)) # vcenter_admin_password
+  .properties.cloud_provider.vsphere.vcenter_ip:
+    value: ((vcenter_host))
+  .properties.cloud_provider.vsphere.vcenter_dc:
+    value: ((vcenter_datacenter))
+  .properties.cloud_provider.vsphere.vcenter_ds:
+    value: ((vcenter_datastore))
+  .properties.cloud_provider.vsphere.vcenter_vms:
+    value: ((bosh_vm_folder)) # The name should be the same as the VM Folder in the Ops Manager Director tile, under the vCenter config page.
+  ### if AWS is selected, then uncomment and fill out the AWS parameters below.
+  ### otherwise, leave this section commented out to avoid Ops Manager parameter settings errors
+  # .properties.cloud_provider.aws.aws_access_key_id_master:
+  #   value:
+  # .properties.cloud_provider.aws.aws_secret_access_key_master:
+  #   value:
+  #     secret: "***"
+  # .properties.cloud_provider.aws.aws_access_key_id_worker:
+  #   value:
+  # .properties.cloud_provider.aws.aws_secret_access_key_worker:
+  #   value:
+  #     secret: "***"
+  ######## Network selector - flannel or nsx
+  .properties.network_selector:
+    value: nsx
+  ### if NSX-T is to be used, then uncomment and fill out the nxt parameters below
+  ### otherwise, leave this section commented out to avoid Ops Manager parameter settings errors
+  .properties.network_selector.nsx.nsx-t-host:
+    value: ((nsxt_hostname_or_ipaddress))  # Please enter the NSX Manager hostname or IP address
+  #.properties.network_selector.nsx.credentials:
+  #  value:
+  #    identity: ( ( nsxt_admin_username ) )  # username to connect to the NSX Manager
+  #    password: ( ( nsxt_admin_password ) )  # password to connect to the NSX Manager
+  .properties.network_selector.nsx.nsx-t-ca-cert:
+    value: "-----BEGIN CERTIFICATE-----\r\nMIIDXjCCAkagAwIBAgIGAWac8TUzMA0GCSqGSIb3DQEBCwUAMHAxITAfBgNVBAMM\r\nGG5zeG1nci5sYWIuYWxla3NzYXVsLmNvbTEQMA4GA1UECgwHQ29tcGFueTESMBAG\r\nA1UECwwJbmV0LWludGVnMQswCQYDVQQGEwJVUzELMAkGA1UECAwCQ0ExCzAJBgNV\r\nBAcMAlNGMB4XDTE4MTAyMjE4MDIyNVoXDTI4MTAxOTE4MDIyNVowcDEhMB8GA1UE\r\nAwwYbnN4bWdyLmxhYi5hbGVrc3NhdWwuY29tMRAwDgYDVQQKDAdDb21wYW55MRIw\r\nEAYDVQQLDAluZXQtaW50ZWcxCzAJBgNVBAYTAlVTMQswCQYDVQQIDAJDQTELMAkG\r\nA1UEBwwCU0YwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQChdmle0ZOZ\r\nREkuaX/AsEFMdB1x99LvCDgPe1M8FXPo1bXADAb0fnWhPhmLop311j6bIuYa6tXb\r\nuwCGDjELuhx2D6yCm0FoGVYXE78M1VDuNDOO5jDX8tclT8YqNgmjWrftLP8J8UWn\r\nrLby+pBsS/Cx9cz1zXOEC2+5HoxkDKsxJe4gOp8TtjwU8kyZ5ed4WQ18Yfyoo0Ro\r\nV8mfMwP1RTuSjnLE4sbpu20S4W3yvdlXmC8EMUSPBwSarWxDqEUfFFzey9qP8i++\r\nEXQwtIPO/DA9Fyr0qgO67Ulh0UjI0MGOur4ZjSBDU80eGkadPb0/ZttYBhRRtPmh\r\nP2lhDkx3OmTLAgMBAAEwDQYJKoZIhvcNAQELBQADggEBAHJmZf9/CgBfr3OBYRgN\r\nIUmYIo+nNAeBTXSfuZPD1Ut35fvuiZuEcxuB+Ip0IhY7O2j6lkWZeNkl8LH7Vv15\r\nkGvhLF+Lkkvsw7K6EFz8kRU5Y5OkUSb7sBew/3Uox6YLzsqnoUk+xLipI2TMimzJ\r\n/3QD/GocBp5S9jv/iy+8wPwEkv08gcS/VKHZMRZmQTnY122nbhzDl6FcI+E+dnx+\r\nbgApuxi09Iapu1TQl4b7zC0uZIdwsMZX87jGEDS2sZca+gifd/Rgg9Mt0V2KRrpk\r\n5idEaHgxzE+j7rlkevtP+3UDoKWRt8bW/L3YSaAN2bQJymmCQhpRlGdod19GQmc0\r\nlzE=\r\n-----END
+      CERTIFICATE-----"  # Optional custom CA certificate to be used to connect to NSX Manager
+  #     -----BEGIN CERTIFICATE-----
+  #     ...
+  #     -----END CERTIFICATE-----
+  .properties.network_selector.nsx.vcenter_cluster:
+    value: ((nsxt_vcenter_cluster))   # Please enter the vSphere cluster name where PKS will be deployed
+  .properties.network_selector.nsx.nsx-t-insecure:
+    value: true    # whether to disable SSL certificate verification when connecting to the NSX Manager
+  .properties.network_selector.nsx.t0-router-id:
+    value: 45d1a1fc-719a-4c10-9c6c-67b0da5944b4  # the UUID of the Tier-0 logical router configured in NSX manager
+  .properties.network_selector.nsx.ip-block-id:
+    value: ebd0df50-9c60-4a34-a611-7ce7898e2211  # the UUID of the IP Block configured in NSX manager
+  .properties.network_selector.nsx.floating-ip-pool-ids:
+    value: 811af49e-d82a-4713-b8e7-78defb381126  # the UUID of the Floating IP Pool configured in NSX manager (for the current release only a single ID is supported)
+  .properties.network_selector.nsx.network_automation:
+    value: true     # Automated Network Provisioning
+  .properties.network_selector.nsx.nat_mode:
+    value: true
+  .properties.network_selector.nsx.nodes-ip-block-id:
+    value: 25ca25e6-c99b-4e82-b668-eefac6e28858              # Nodes IP Block ID
+  # .properties.network_selector.nsx.bosh-client-id:
+  #   value:
+  # .properties.network_selector.nsx.bosh-client-secret:
+  #   value:
+  #     secret: "***"
+  # .properties.proxy_selector:
+  #   value: Disabled      # HTTP/HTTPS Proxy (for vSphere only) - Enabled or Disabled
+  # .properties.proxy_selector.enabled.http_proxy_url:
+  #   value:
+  # .properties.proxy_selector.enabled.http_proxy_credentials:
+  #   value:
+  #     password: "***"
+  # .properties.proxy_selector.enabled.no_proxy:
+  #   value:
+  .properties.vm_extensions:
+    value:           # Allow outbound internet access from Kubernetes cluster vms (IaaS-dependent)
+    - public_ip      # Enable outbound internet access. Warning: Not allowing internet access will require a NAT instance.
+  ######## UAA configuration page
+  .properties.uaa_pks_cli_access_token_lifetime:
+    value: 86400
+  .properties.uaa_pks_cli_refresh_token_lifetime:
+    value: 172800
+  .properties.uaa_oidc:
+    value: true
+  ## Configure your UAA user account store with either internal or external authentication mechanisms
+  ## Accepted values:
+  ## - internal    (Internal UAA)
+  ## - ldap        (LDAP Server)
+  .properties.uaa:
+    value: ldap
+  ### if ldap server, then uncomment and fill out the ldap parameters below
+  ### otherwise, leave this section commented out to avoid Ops Manager parameter settings errors
+  .properties.uaa.ldap.url:
+    value: "ldaps://ldap.jumpcloud.com:636"
+  .properties.uaa.ldap.credentials:
+    value:
+      identity: "uid=pksbind,ou=Usersdc=jumpcloud,dc=com"
+      password: ""
+  .properties.uaa.ldap.search_base:
+    value: "ou=Users,dc=jumpcloud,dc=com"
+  .properties.uaa.ldap.search_filter:
+    value: uid={0}
+  .properties.uaa.ldap.group_search_base:
+    value: "ou=Users,dc=jumpcloud,dc=com"
+  .properties.uaa.ldap.group_search_filter:
+    value: member={0}
+  # .properties.uaa.ldap.server_ssl_cert:
+  #   value:
+  # .properties.uaa.ldap.server_ssl_cert_alias:
+  #   value:
+  .properties.uaa.ldap.mail_attribute_name:
+    value: mail
+  # .properties.uaa.ldap.email_domains:
+  #   value:
+  .properties.uaa.ldap.first_name_attribute:
+    value: "givenName"
+  .properties.uaa.ldap.last_name_attribute:
+    value: "sn"
+  # .properties.uaa.ldap.ldap_referrals:
+  #   value: follow
+  ######## MONITORING
+  ## Wavefront Integration - enabled or disabled
+  .properties.wavefront:
+    value: enabled
+  ### if wavefront integration is enabled, uncomment and fill out the wavefront parameters below
+  ### otherwise, leave this section commented out to avoid Ops Manager parameter settings errors
+  .properties.wavefront.enabled.wavefront_api_url:
+    value: "https://api.wavefront.com"
+  .properties.wavefront.enabled.wavefront_token:
+    value:
+      secret: "2cbebb51"
+  .properties.wavefront.enabled.wavefront_alert_targets:
+    value: "asaul@pivotal.io"
+  ######## LOGGING
+  ######## SYSLOG - disabled or enabled
+  .properties.syslog_migration_selector:
+    value: disabled
+  ### if syslog is enabled, uncomment and fill out the syslog parameters below
+  ### otherwise, leave this section commented out to avoid Ops Manager parameter settings errors
+  # .properties.syslog_migration_selector.enabled.address:
+  #   value: 10.10.10.10  #The address or host for the syslog server
+  # .properties.syslog_migration_selector.enabled.port:
+  #   value: 0  # The port on which the syslog server listens
+  # .properties.syslog_migration_selector.enabled.transport_protocol:
+  #   value: tcp  # The transport protocol used to send syslog messages to the server
+  # .properties.syslog_migration_selector.enabled.tls_enabled:
+  #   value: true # Send logs encrypted to syslog server via TLS
+  # .properties.syslog_migration_selector.enabled.permitted_peer:
+  #   value: "*.example.com" # Either the accepted fingerprint (SHA1) or name of remote peer
+  # .properties.syslog_migration_selector.enabled.ca_cert:
+  #   value: |
+  #     -----BEGIN CERTIFICATE-----
+  #     ...
+  #     -----END CERTIFICATE-----
+  ###
+  ### VMware vRealize Log Insight Integration - disabled or enabled
+  .properties.pks-vrli:
+    value: disabled
+  ### if vRealize Log Insight Integration is enabled, uncomment and fill out the corresponding parameters below
+  ### otherwise, leave this section commented out to avoid Ops Manager parameter settings errors
+  # .properties.pks-vrli.enabled.host:
+  #   value:
+  # .properties.pks-vrli.enabled.use_ssl:
+  #   value: true
+  # .properties.pks-vrli.enabled.skip_cert_verify:
+  #   value: false
+  # .properties.pks-vrli.enabled.ca_cert:
+  #   value:
+  # .properties.pks-vrli.enabled.rate_limit_msec:
+  #   value: 0
   #
-  # - name: T1Router-PKS-Services
-  #   # No need for stateful routing
-  #   switches:
-  #   - name: PKS-Services
-  #     logical_switch_gw: 172.23.2.1 # Last octet should be 1 rather than 0
-  #     subnet_mask: 24
+  ######## TELEMETRY
+  ## Information about PKS configuration and usage can be collected to provide better support and product improvements: enabled or disabled
+  .properties.telemetry_selector:
+    value: enabled
 
+######## Resources
+pks-resources: |
+  pivotal-container-service:
+    instance_type:
+      id: micro
+    persistent_disk:
+      size_mb: "10240"
 
-# Make sure the ncp/cluster tag matches the one defined on the T0 Router
-# Additional the ncp/ha tag should be set for HA Spoof guard profile
-nsx_t_ha_switching_profile_spec: |
-  ha_switching_profiles:
-  - name: HASwitchingProfile
-    tags:
-      ncp/cluster: 'pas1'  # Should match the top level ncp/cluster tag value
-      ncp/ha: 'true'       # Required for HA
-      testtag: 'testpas1'
-
-
-# Make sure the ncp/cluster tag matches the one defined on the T0 Router
-# Add additional container ip blocks as needed
-nsx_t_container_ip_block_spec: |
-  container_ip_blocks:
-  - name: container-ip-block
-    cidr: 192.168.128.0/17
-    # Specify tags with PAS 2.0 and NSX Tile 2.1.0
-    # Tags not needed for PAS 2.1 and NSX Tile 2.1.3
-    tags:
-      ncp/cluster: 'pas1' # Should match the top level ncp/cluster tag value
-      testtag: 'testpas1'
-  # - name: node-container-ip-block-pks-without-tag
-  #   cidr: 172.24.0.0/14
-  #   # No tags for this block
-  # - name: pod-container-ip-block-pks-with-tag
-  #   cidr: 172.28.0.0/14
-  #   tags:
-  #     ncp/shared_resource: 'true'
-
-
-
-# Make sure the ncp/cluster tag matches the one defined on the T0 Router for PAS
-# Make sure the ncp/shared tag is set to true for PKS
-# Additional the ncp/external tag should be set for external facing ip pool
-# Add additional exernal ip pools as needed
-# Change the cidr, gateway, nameserver, dns_domain as needed
-# The cidr, gateway, start/end ips should be reachable via static or bgp routing through T0 router
-# Leave some ips reserved for Ops mgr, pks controller, lbr vips for goRouter, SSH Proxy etc.
-# Refer to the `docs/static-routing-setup.md`
-nsx_t_external_ip_pool_spec: |
-  external_ip_pools:
-  - name: snat-vip-pool-for-pas
-    cidr: 10.100.0.0/24  # Should be a 0/24 or some valid cidr, matching the external exposed uplink
-    gateway: 10.100.0.1
-    start: 10.100.0.31 # Should not include gateway, not overlap with the T0 router uplink ips; reserve some for Ops Mgr, LB Vips for GoRouter, SSH Proxy
-    end: 10.100.0.200  # Should not include gateway, not overlap with the T0 router uplink ips
-    # Specify tags with PAS 2.0 and NSX Tile 2.1.0
-    # Tags not needed for PAS 2.1 and NSX Tile 2.1.3
-    tags:
-      ncp/cluster: 'pas1'   # Should match the top level ncp/cluster tag value for PAS
-      ncp/external: 'true'  # Required for external facing ips
-      testtag: 'testpas1'
-  - name: snat-vip-pool-with-no-tags
-    cidr: 10.200.0.0/24  # Should be a 0/24 or some valid cidr, matching the external exposed uplink
-    gateway: 10.200.0.1
-    start: 10.200.0.31 # Should not include gateway, not overlap with the T0 router uplink ips
-    end: 10.200.0.200  # Should not include gateway
-  - name: snat-vip-pool-for-pks
-    cidr: 10.300.0.0/24 # Should be a 0/24 or some valid cidr, matching the external exposed uplink
-    gateway: 10.300.0.1
-    start: 10.300.0.31 # Should not include gateway, not overlap with the T0 router uplink ips; reserve some for PKS Controller, Harbor
-    end: 10.300.0.200  # Should not include gateway
-    tags:
-      ncp/external: 'true'        # Required for external facing ips
-      ncp/shared_resource: 'true'   # Required for PKS
-
-# Specify NAT rules
-# Provide matching dnat and snat rule for specific vms by using ips for destination_network and translated_network that need to be exposed like Ops Mgr
-# Provide snat rules for outbound from either container or a vm by specifying the source_network (cidr) and translated network ip
-# Ingress into Ops Mgr: External IP of Ops Mgr -> DNAT -> translated into internal ip of Ops Mgr
-# Egress from Ops Mgr: internal ip of Ops Mgr -> SNAT -> translated into external IP of Ops Mgr
-# Ingress into PKS API Controller: External IP of controller -> DNAT -> translated into internal ip of controller
-# Egress from PKS API Controller: internal ip of controller -> SNAT -> translated into external IP of controller
-# Egress from SomeNetwork: cidr of network -> SNAT -> translated into some external IP
-nsx_t_nat_rules_spec: |
-  nat_rules:
-  # Sample entry for allowing inbound to PAS Ops manager - ingress
-  - t0_router: DefaultT0Router
-    nat_type: dnat
-    destination_network: 10.13.12.2   # External IP address for PAS opsmanager
-    translated_network: 192.168.1.5     # Internal IP of PAS Ops manager
-    rule_priority: 1024                  # Higher priority
-  # Sample entry for allowing outbound from PAS Ops Mgr to external - egress
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.1.5         # Internal IP of PAS opsmanager
-    translated_network: 10.13.12.2      # External IP address for PAS opsmanager
-    rule_priority: 1024                  # Higher priority
-  # Sample entry for PAS Infra network SNAT - egress
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.1.0/24      # PAS Infra network cidr
-    translated_network: 10.13.12.3      # SNAT External Address for PAS networks
-    rule_priority: 8000                  # Lower priority
-    #destination_network: 101.101.101.1  # Optional - allow specific network to reach out to
-
-  # Sample entry for PAS ERT network SNAT - egress
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.2.0/24      # PAS ERT network cidr
-    translated_network: 10.13.12.3      # SNAT External Address for PAS networks
-    rule_priority: 8000                  # Lower priority
-    #destination_network: 101.101.101.1  # Optional - allow specific network to reach out to
-
-  # Sample entry for PAS Services network SNAT - egress
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.3.0/24      # PAS Services network cidr
-    translated_network: 10.13.12.3      # SNAT External Address for PAS networks
-    rule_priority: 8001                  # Lower priority
-    #destination_network: 101.101.101.1  # Optional - allow specific network to reach out to
-
-  # Sample entry for PAS Dynamic Services network SNAT - egress
-  - t0_router: DefaultT0Router
-    nat_type: snat
-    source_network: 192.168.4.0/24      # PAS Dynamic Services network cidr
-    translated_network: 10.13.12.3      # SNAT External Address for PAS networks
-    rule_priority: 8001                  # Lower priority
-    #destination_network: 101.101.101.1  # Optional - allow specific network to reach out to
-
-  # # Sample entry for PKS PKS-Infra network - egress
-  # - t0_router: DefaultT0Router
-  #   nat_type: snat
-  #   source_network: 172.23.1.0/24        # PKS Infra network cidr
-  #   translated_network: 10.13.12.6       # SNAT External Address for PKS networks
-  #   rule_priority: 8001                  # Lower priority
-  #   #destination_network: 101.101.101.1  # Optional - allow specific network to reach out to
-  #
-  # # Sample entry for PKS PKS-Clusters network - egress
-  # - t0_router: DefaultT0Router
-  #   nat_type: snat
-  #   source_network: 172.23.2.0/24        # PKS Services network cidr
-  #   translated_network: 10.13.12.6       # SNAT External Address for PKS networks
-  #   rule_priority: 8001                  # Lower priority
-  #   #destination_network: 101.101.101.1  # Optional - allow specific network to reach out to
-  #
-  # # Sample entry for allowing inbound to PKS Ops manager
-  # - t0_router: DefaultT0Router
-  #   nat_type: dnat
-  #   destination_network: 10.13.12.5      # External IP address for PKS opsmanager
-  #   translated_network: 172.23.1.5       # Internal IP of PKS Ops manager
-  #   rule_priority: 1024                  # Higher priority
-  # # Sample entry for allowing outbound from PKS Ops Mgr to external
-  # - t0_router: DefaultT0Router
-  #   nat_type: snat
-  #   source_network: 172.23.1.5           # Internal IP of PAS opsmanager
-  #   translated_network: 10.13.12.5       # External IP address for PAS opsmanager
-  #   rule_priority: 1024                  # Higher priority
-  #
-  # # Sample entry for allowing inbound to PKS Controller
-  # No need to create this if using nsx-t-ci-pipeline
-  # - t0_router: DefaultT0Router
-  #   nat_type: dnat
-  #   destination_network: 10.13.12.7      # External IP address for PKS controller
-  #   translated_network: 172.23.2.4       # Internal IP of PKS Ops Controller
-  #   rule_priority: 1024                  # Higher priority
-  #   #destination_network: 101.101.101.1  # Optional - allow specific network to reach out to
-  # # Sample entry for allowing outbound from PKS Controller to external
-  # - t0_router: DefaultT0Router
-  #   nat_type: snat
-  #   source_network: 172.23.2.4          # Internal IP of PKS controller
-  #   translated_network: 10.13.12.7      # External IP address for PKS controller
-  #   rule_priority: 1024                 # Higher priority
-
-nsx_t_csr_request_spec: |
-  csr_request:
-    #common_name not required - would use nsx_t_manager_host_name
-    org_name: Company            # EDIT
-    org_unit: net-integ          # EDIT
-    country: US                  # EDIT
-    state: CA                    # EDIT
-    city: SF                     # EDIT
-    key_size: 2048               # Valid values: 2048 or 3072
-    algorithm: RSA               # Valid values: RSA or DSA
-
-# LBR definition
-# By default, all the server pools would use Layer 4 - TCP pass through
-# No ssl termination or handling, uses default tcp active monitor & auto map for virtual server
-# Auto Map mode uses LB interface IP and ephemeral port.
-# In scenarios where both Clients and Pool Members are attached to the same Logical Router,
-# SNAT (Auto Map or IP List) must be used.
-
-# LBR Sizing guide
-# LB Size | Virtual Servers | Pool Members
-# small   |   10            |   30
-# medium  |  100            |  300
-# large   | 1000            | 3000
-
-# No. of LBs per edge based on size of edge
-# Edge Size | Small LBs| Medium LBs| Large LBs
-#
-# small     |    0     |   0       | 0
-# medium    |    1     |   0       | 0 # Recommended for running only PAS or PKS
-# large     |    4     |   1       | 1 # Recommended for running PAS + PKS
-# Bare metal - not handled here
-
-# Create Active monitors for LBR security group integration, cannot use passive or default monitors
-nsx_t_monitor_spec: |
-  active_monitors:
-  # Sample entry for creating Active Monitors for PAS ERT
-  - name: gorouter-monitor
-    type: LbHttpMonitor
-    monitor_port: 8080
-    path: /health        # Http monitor requires path
-  - name: diego-brain-monitor
-    type: LbTcpMonitor
-    monitor_port: 2222
-  - name: mysql-proxy-monitor
-    type: LbTcpMonitor
-    monitor_port: 1936
-
-# Create Security groups
-# These would be later linked with the PAS GoRouters or other groups as needed
-nsx_t_nsgroup_spec: |
-  nsgroups:
-  # Sample entry for creating LBR for PAS ERT
-  - name: PAS1-GoRouter-NSG
-    tags:
-      pas-foundation: PAS1        # Tag to associate with the NSGroup
-  - name: PAS1-TCPRouter-NSG
-    tags:
-      pas-foundation: PAS1        # Tag to associate with the NSGroup
-  - name: PAS1-SSHProxy-NSG
-    tags:
-      pas-foundation: PAS1        # Tag to associate with the NSGroup
-  - name: PAS1-MySQLProxy-NSG
-    tags:
-      pas-foundation: PAS1        # Tag to associate with the NSGroup
-  - name: PAS2-GoRouter-NSG
-    tags:
-      pas-foundation: PAS2        # Tag to associate with the NSGroup
-
-## Allow user to specify the NS Group association -> in that case, member details wont be used.
-## Also, if ns group is used, specify the active monitor name. Otherwise default to the default builtin tcp monitor
-
-## Additionally, max pool member size (max_members) need to be specified when using NSG/Dynamic membership
-## The maximum size of pool members for SMALL load balancer service form factor is 30
-## So, ensure the total pool members does not go over the supported config for a given lbr size
-## Default max members per pool is 4, if not specified
-
-nsx_t_lbr_spec: |
-  loadbalancers:
-  # Sample entry for creating LBR for PAS ERT
-  - name: PAS-ERT-LBR
-    t1_router: T1-Router-PAS-ERT # Should match a previously declared T1 Router
-    size: small                  # Allowed sizes: small, medium, large
-    virtual_servers:
-    - name: goRouter443          # Unique name that signifies function being exposed
-      vip: 10.13.12.150          # Exposed VIP for LBR to listen on
-      port: 443
-      # If nsgroup is defined, then static members entry will be ignored
-      nsgroup: 'PAS1-GoRouter-NSG'
-      monitor: gorouter-monitor
-      max_members: 5
-      # Ignored... as nsgroup is defined above
-      members:
-      - ip: 192.168.2.31        # Internal ip of GoRouter instance 1
-        port: 443
-      - ip: 192.168.2.32        # Internal ip of GoRouter instance 2
-        port: 443
-    - name: goRouter80
-      vip: 10.13.12.150
-      port: 80
-      # If nsgroup is defined, then static members will be ignored
-      nsgroup: 'PAS1-GoRouter-NSG'
-      monitor: gorouter-monitor
-      max_members: 5
-      # Ignored... as nsgroup is defined above
-      members:
-      - ip: 192.168.2.31        # Internal ip of GoRouter instance 1
-        port: 80
-      - ip: 192.168.2.32        # Internal ip of GoRouter instance 2
-        port: 80
-    - name: sshProxy             # SSH Proxy exposed to outside
-      vip: 10.13.12.151
-      port: 2222                 # Port 2222 for ssh
-      # If nsgroup is defined, then static members will be ignored
-      nsgroup: 'PAS1-SSHProxy-NSG'
-      monitor: diego-brain-monitor
-      max_members: 2
-      # Ignored... as nsgroup is defined above
-      members:
-      - ip: 192.168.2.41        # Internal ip of Diego Brain where ssh proxy runs
-        port: 2222
-    - name: mySQLProxy          # Mysql Proxy exposed to outside
-      vip: 10.13.12.153
-      port: 1936                 # Port 1936 for mysql proxy
-      # If nsgroup is defined, then static members will be ignored
-      nsgroup: 'PAS1-MySQLProxy-NSG'
-      monitor: mysql-proxy-monitor
-      max_members: 2
-      # Ignored... as nsgroup is defined above
-      members:
-      - ip: 192.168.2.45        # Internal ip of Mysql proxy
-        port: 1936
-    - name: sampleTcpRouter      # Sample for TCP Router that uses a port range
-      vip: 10.13.12.152
-      port: 10000-10500          # Uses a port range rather than a fixed port
-      # no nsgroup defined, so use static members and default tcp monitoring
-      members:
-      - ip: 192.168.2.42        # Internal ip of TcpRouter instance 1
-        port: 10000-10500
-      - ip: 192.168.2.43        # Internal ip of TcpRouter instance 2
-        port: 10000-10500

@@ -54,7 +54,7 @@ opsman_disk_type: "thin"
 om_vm_power_state: true
 
 # PCF Ops Manager minor version to track/
-opsman_major_minor_version: ^2\.2\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
+opsman_major_minor_version: ^2\.4\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
 
 # Pivnet token for downloading resources from Pivnet. Find this token at https://network.pivotal.io/users/dashboard/edit-profile
 pivnet_token: 
@@ -62,3 +62,5 @@ pivnet_token:
 # opsman_admin_username/opsman_admin_password needs to be specified
 opsman_admin_username: admin       # Username for Ops Manager admin account
 opsman_admin_password:        # Password for Ops Manager admin account
+
+pks_major_minor_version: ^1\.3\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
