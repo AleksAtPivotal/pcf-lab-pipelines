@@ -492,7 +492,7 @@ cf_network=$(
 )
 
 JOB_RESOURCE_CONFIG="{
-  \"backup-prepare\": { \"instances\": $BACKUP_PREPARE_INSTANCES },
+  \"backup_restore\": { \"instances\": $BACKUP_PREPARE_INSTANCES },
   \"blobstore\": { \"instances\": $BLOBSTORE_INSTANCES },
   \"compute\": { \"instances\": $DIEGO_CELL_INSTANCES },
   \"control\": { \"instances\": $DIEGO_BRAIN_INSTANCES },
