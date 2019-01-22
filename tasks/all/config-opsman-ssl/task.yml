@@ -14,7 +14,8 @@ params:
   OPS_MGR_PWD:
   OPS_MGR_SSL_PUB:
   OPS_MGR_SSL_PRIV:
-
+  PIVNET_API_TOKEN:
+  
 inputs:
   - name: pcf-lab-pipelines
 
