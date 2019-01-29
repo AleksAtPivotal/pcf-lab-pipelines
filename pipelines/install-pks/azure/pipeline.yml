@@ -127,7 +127,7 @@ jobs:
         path: pcf-pipelines/install-pcf/azure/tasks/iaas/upload-opsman.sh
 
   - task: create-infrastructure
-    file: pcf-lab-pipelines/install-pks/azure/tasks/create-infrastructure/task.yml
+    file: pcf-lab-pipelines/pipelines/install-pks/azure/tasks/create-infrastructure/task.yml
     params:
       AZURE_SUBSCRIPTION_ID: {{azure_subscription_id}}
       AZURE_TENANT_ID: {{azure_tenant_id}}
