@@ -1,0 +1,37 @@
+# Pivnet token for downloading resources from Pivnet. Find this token at https://network.pivotal.io/users/dashboard/edit-profile
+pivnet_token: CHANGEME
+
+# PCF Ops Manager minor version to track
+opsman_major_minor_version: ^2\.4\.[0-9]+$ # Ops Manager minor version to track (e.g ^2\.0\.[0-9]+$ will track 2.0.x versions)
+
+# Storage account and container that will be used for your terraform state
+azure_storage_container_name: CHANGEME
+terraform_azure_storage_access_key: CHANGEME
+terraform_azure_storage_account_name: CHANGEME
+
+azure_subscription_id: CHANGEME
+azure_tenant_id: CHANGEME
+
+azure_client_id: CHANGEME
+azure_client_secret: CHANGEME
+
+# a valid Azure region.
+azure_region: CHANGEME
+
+# Prefix to use for Terraform-managed infrastructure, e.g. 'pcf-terraform'
+# Must be globally unique.
+azure_terraform_prefix: CHANGEME
+
+# opsman_admin_username/opsman_admin_password needs to be specified
+# These define the login values for the OpsMan UI.
+opsman_admin_username: CHANGEME
+opsman_admin_password: CHANGEME
+
+# Opsman Settings
+opsman_domain_or_ip_address: CHANGEME # This must be your pcf_ert_domain with "opsman." as a prefix. For example, opsman.pcf.example.com
+
+# The set of terraform templates and opsman configuration to use in the pipeline (c0-azure-base|c0-azure-multi-res-group)
+azure_pcf_terraform_template: c0-azure-base
+
+# a valid Azure region.
+azure_region: "East US"
