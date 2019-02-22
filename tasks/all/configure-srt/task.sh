@@ -129,7 +129,6 @@ cf_properties=$(
     --arg tcp_router_static_ips "$TCP_ROUTER_STATIC_IPS" \
     --arg company_name "$COMPANY_NAME" \
     --arg ssh_static_ips "$SSH_STATIC_IPS" \
-    --arg mysql_static_ips "$MYSQL_STATIC_IPS" \
     --arg haproxy_forward_tls "$HAPROXY_FORWARD_TLS" \
     --arg haproxy_backend_ca "$HAPROXY_BACKEND_CA" \
     --arg router_tls_ciphers "$ROUTER_TLS_CIPHERS" \
